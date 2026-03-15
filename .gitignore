@@ -1,0 +1,12 @@
+# PlatformIO
+.pio/
+.cache/
+
+# VSCode
+.vscode/
+
+# Node.js (Z2M external converters)
+node_modules/
+
+# macOS
+.DS_Store
