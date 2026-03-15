@@ -6,6 +6,7 @@ DIY Zigbee firmware projects for the [Seeed Studio XIAO ESP32C6](https://wiki.se
 
 | Project | Description |
 |---|---|
+| `garage-doors` | 4-relay switch controller for garage and yard doors/gates |
 
 ## Hardware
 
@@ -35,3 +36,12 @@ project/
 ## Libraries
 
 Shared code lives in `libraries/` and is referenced by projects via `lib_extra_dirs`.
+
+## Serial Monitor
+
+```zsh
+espmon() { local p=$1 b=${2:-115200}; while :; do [[ -e $p ]] && { stty -f "$p" "$b" raw && cat "$p"; } || sleep .1; done }
+espmon /dev/cu.usbmodem1101
+```
+
+Reconnects automatically when the device is unplugged/replugged.
