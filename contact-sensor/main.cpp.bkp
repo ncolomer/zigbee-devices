@@ -1,0 +1,130 @@
+#ifndef ZIGBEE_MODE_ED
+#error "Zigbee end device mode is not selected in Tools->Zigbee mode"
+#endif
+
+#include "Zigbee.h"
+#include "ZigbeeContactSensor.h"
+
+/* Debug configuration - comment out for production release */
+#ifdef DEBUG
+  #define ENABLE_SERIAL_DEBUG 1
+#else
+  #define ENABLE_SERIAL_DEBUG 0
+#endif
+
+// Serial debug macros - only active when ENABLE_SERIAL_DEBUG is 1
+#if ENABLE_SERIAL_DEBUG
+  #define DEBUG_INIT()        Serial.begin(115200); delay(1000)
+  #define DEBUG_PRINT(...)    Serial.printf(__VA_ARGS__)
+  #define DEBUG_PRINTLN(...)  Serial.printf(__VA_ARGS__); Serial.println()
+  #define DEBUG_END()         Serial.flush(); Serial.end();
+#else
+  #define DEBUG_INIT()
+  #define DEBUG_PRINT(...)
+  #define DEBUG_PRINTLN(...)
+  #define DEBUG_FLUSH()
+  #define DEBUG_END()
+#endif
+
+/* Zigbee configuration */
+#define ZIGBEE_MANUFACTURER                "DIY"
+#define ZIGBEE_MODEL                       "ContactSensor"
+
+#define ENDPOINT_REED_RELAY                1
+
+/* GPIO definitions */
+#define REED_PIN                           2                    // GPIO2 / D2 / A2 / LP_GPIO2
+#define BUTTON_PIN                         BOOT_PIN             // Boot button for factory reset
+#define LED_PIN                            LED_BUILTIN          // Built-in LED
+
+/* Factory reset configuration */
+#define FACTORY_RESET_TIME_MS              3000                 // Factory reset button hold time in milliseconds
+
+/* LED flash helper */
+void flashStatusLED() {
+    digitalWrite(LED_PIN, LOW);   // LED is active LOW on XIAO ESP32C6
+    delay(50);
+    digitalWrite(LED_PIN, HIGH);
+}
+
+// Zigbee devices
+ZigbeeContactSensor zbContact(ENDPOINT_REED_RELAY);
+
+// State tracking (RTC memory persists across deep sleep)
+RTC_DATA_ATTR bool contact = false;
+
+/********************* Zigbee Initialization *********************/
+void initializeZigbee() {
+    DEBUG_PRINTLN("Initializing Zigbee stack...");
+    zbContact.setManufacturerAndModel(ZIGBEE_MANUFACTURER, ZIGBEE_MODEL);
+    zbContact.setPowerSource(ZB_POWER_SOURCE_BATTERY, 100, 37);
+    Zigbee.addEndpoint(&zbContact);
+
+    // Start Zigbee
+    esp_zb_cfg_t zigbeeConfig = ZIGBEE_DEFAULT_ED_CONFIG();
+    Zigbee.setTimeout(10000);
+
+    if (!Zigbee.begin(&zigbeeConfig, false)) {
+        DEBUG_PRINTLN("Zigbee failed to start! Rebooting...");
+        DEBUG_END();
+        ESP.restart();
+    }
+
+    DEBUG_PRINT("Connecting to Zigbee network");
+    unsigned long lastToggle = millis();
+    while (!Zigbee.connected()) {
+        DEBUG_PRINT(".");
+        if (millis() - lastToggle >= 500) {
+            digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+            lastToggle = millis();
+        }
+        delay(50);
+    }
+    digitalWrite(LED_PIN, HIGH);  // ensure LED is off when connected
+    DEBUG_PRINTLN(" connected!");
+}
+
+/********************* Arduino Functions **************************/
+void setup() {
+    DEBUG_INIT();
+    DEBUG_PRINTLN("=== %s %s ===", ZIGBEE_MANUFACTURER, ZIGBEE_MODEL);
+
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH);
+
+    pinMode(REED_PIN, INPUT_PULLUP);
+    pinMode(BUTTON_PIN, INPUT);
+
+    initializeZigbee();
+}
+
+void loop() {
+    // Checking pin for contact change (same pattern as Zigbee_Contact_Switch example)
+    if (digitalRead(REED_PIN) == HIGH && !contact) {
+        zbContact.setOpen();
+        contact = true;
+        flashStatusLED();
+        DEBUG_PRINTLN("Contact state changed: open");
+    } else if (digitalRead(REED_PIN) == LOW && contact) {
+        zbContact.setClosed();
+        contact = false;
+        flashStatusLED();
+        DEBUG_PRINTLN("Contact state changed: closed");
+    }
+
+    // Check factory reset button
+    if (digitalRead(BUTTON_PIN) == LOW) {
+        delay(100);
+        int startTime = millis();
+        while (digitalRead(BUTTON_PIN) == LOW) {
+            delay(50);
+            if ((millis() - startTime) > FACTORY_RESET_TIME_MS) {
+                DEBUG_PRINTLN("Resetting Zigbee to factory and rebooting in 1s.");
+                DEBUG_END();
+                Zigbee.factoryReset(/*restart=*/true);
+            }
+        }
+    }
+
+    delay(100);
+}
