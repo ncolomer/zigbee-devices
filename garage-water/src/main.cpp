@@ -18,10 +18,10 @@
 #define EP_METER_1              2
 #define EP_METER_2              3
 
-/* GPIO definitions — XIAO ESP32-C6 + Grove Shield, first (snappable) half */
+/* GPIO definitions — XIAO ESP32-C6 + Grove Shield */
 #define RELAY_PIN               D5           // ON/tank = HIGH (de-energized), OFF/grid = LOW (energized)
-#define METER1_PIN              D0           // water meter 1 pulse
-#define METER2_PIN              D1           // water meter 2 pulse
+#define METER1_PIN              D1           // water meter 1 pulse
+#define METER2_PIN              D2           // water meter 2 pulse
 #define BUTTON_PIN              BOOT_PIN     // GPIO9 onboard boot button (factory reset)
 #define LED_PIN                 LED_BUILTIN
 

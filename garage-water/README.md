@@ -10,16 +10,16 @@ Shield. It selects the water source with a relay and totals two water meters.
 - **Power**: mains via USB-C (no battery) — always awake, no deep sleep
 - **Relay**: 3.3V-piloted, Normally Open, **energized on LOW**
 
-### Pin Connections (Grove ports, first snappable half)
+### Pin Connections
 
 | Function            | Pin  | GPIO   | Notes                                              |
 |---------------------|------|--------|----------------------------------------------------|
 | Relay control       | D5   | 23     | ON/tank = HIGH (de-energized), OFF/grid = LOW      |
-| Water meter 1 pulse | D0   | 0      | internal pull-up, FALLING interrupt, 10 ms debounce|
-| Water meter 2 pulse | D1   | 1      | internal pull-up, FALLING interrupt, 10 ms debounce|
+| Water meter 1 pulse | D1   | 1      | internal pull-up, FALLING interrupt, 10 ms debounce|
+| Water meter 2 pulse | D2   | 2      | internal pull-up, FALLING interrupt, 10 ms debounce|
 | Factory reset       | BOOT | 9      | onboard button, hold 3 s                           |
 | Status LED          | —    | 15     | pairing / activity feedback                        |
-| Spare               | D7   | 17     | unused                                             |
+| Spare               | D0, D7 | 0, 17 | unused                                            |
 
 **Water source / fail-safe:** the relay idles HIGH (de-energized) via pull-up, and the
 tank is wired to the de-energized side, so an **unpowered device selects the rain tank**.
