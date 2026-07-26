@@ -14,7 +14,7 @@ Shield. It selects the water source with a relay and totals two water meters.
 
 | Function            | Pin  | GPIO   | Notes                                              |
 |---------------------|------|--------|----------------------------------------------------|
-| Relay control       | D5   | 23     | ON/tank = HIGH (de-energized), OFF/grid = LOW      |
+| Relay control       | D4   | 22     | ON/tank = HIGH (de-energized), OFF/grid = LOW      |
 | Water meter 1 pulse | D1   | 1      | internal pull-up, FALLING interrupt, 10 ms debounce|
 | Water meter 2 pulse | D2   | 2      | internal pull-up, FALLING interrupt, 10 ms debounce|
 | Factory reset       | BOOT | 9      | onboard button, hold 3 s                           |
