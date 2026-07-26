@@ -19,9 +19,13 @@ public:
   void setDefaultPulseDuration(uint16_t pulseDurationMs);
   void setDefaultSwitchType(uint8_t switchType);
   void setDefaultSwitchActions(uint8_t switchActions);
+  void setDefaultOnOff(bool state);
 
   void onPulseDurationChanged(std::function<void(uint16_t)> callback) {
     _on_pulse_duration_changed = callback;
+  }
+  void onStateChanged(std::function<void(bool)> callback) {
+    _on_state_changed = callback;
   }
   void onSwitchTypeChanged(std::function<void(uint8_t)> callback) {
     _on_switch_type_changed = callback;
@@ -53,6 +57,7 @@ private:
   std::function<void(uint16_t)> _on_pulse_duration_changed = nullptr;
   std::function<void(uint8_t)> _on_switch_type_changed = nullptr;
   std::function<void(uint8_t)> _on_switch_actions_changed = nullptr;
+  std::function<void(bool)> _on_state_changed = nullptr;
 };
 
 
