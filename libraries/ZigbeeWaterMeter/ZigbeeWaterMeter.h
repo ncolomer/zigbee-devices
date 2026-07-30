@@ -8,6 +8,9 @@
 
 // Custom attribute IDs (manufacturer-specific)
 #define ATTR_LITERS_PER_PULSE 0xF001
+// currentSummDelivered is read-only at the stack level (can't be made writable on
+// esp-zigbee-lib 1.6.8), so calibration is done by writing this custom attribute instead.
+#define ATTR_SET_VOLUME       0xF000
 
 class ZigbeeWaterMeter : public ZigbeeEP {
 public:
@@ -34,6 +37,7 @@ private:
   esp_zb_attribute_list_t *_metering_cluster = nullptr;
 
   esp_zb_cluster_list_t *_createClusters();
+  bool _report(uint32_t liters);  // no lock; call with the Zigbee lock held or from a callback
 
   std::function<void(uint32_t)> _on_water_volume_changed = nullptr;
   std::function<void(uint16_t)> _on_liters_per_pulse_changed = nullptr;

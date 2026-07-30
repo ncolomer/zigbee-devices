@@ -24,10 +24,11 @@ esp_zb_cluster_list_t *ZigbeeWaterMeter::_createClusters() {
   esp_zb_uint24_t multiplier          = {.low = 1,    .high = 0};
   esp_zb_uint24_t divisor             = {.low = 1000, .high = 0};
   uint16_t        liters_per_pulse    = 0;
+  uint32_t        set_volume          = 0;
 
   _metering_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_METERING);
   //       Attribute ID                                             Type                            Access                                                                Value
-  ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48,       ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, &current_summation);
+  ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48,       ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING,  &current_summation);
   ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_STATUS_ID,                      ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,   ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY,                                     &status);
   ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_UNIT_OF_MEASURE_ID,             ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY,                                     &unit_of_measure);
   ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_SUMMATION_FORMATTING_ID,        ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,   ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY,                                     &summation_fmt);
@@ -35,6 +36,7 @@ esp_zb_cluster_list_t *ZigbeeWaterMeter::_createClusters() {
   ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID,                  ESP_ZB_ZCL_ATTR_TYPE_24BIT,     ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY,                                     &multiplier);
   ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID,                     ESP_ZB_ZCL_ATTR_TYPE_24BIT,     ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY,                                     &divisor);
   ADD_ATTR(ATTR_LITERS_PER_PULSE,                                   ESP_ZB_ZCL_ATTR_TYPE_U16,       ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, &liters_per_pulse);
+  ADD_ATTR(ATTR_SET_VOLUME,                                         ESP_ZB_ZCL_ATTR_TYPE_U32,       ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE,                                    &set_volume);
   // clang-format on
 
   #undef ADD_ATTR
@@ -63,15 +65,14 @@ void ZigbeeWaterMeter::setDefaultLitersPerPulse(uint16_t liters_per_pulse) {
   esp_zb_cluster_update_attr(_metering_cluster, ATTR_LITERS_PER_PULSE, &liters_per_pulse);
 }
 
-bool ZigbeeWaterMeter::reportReadingLiters(uint32_t liters) {
+// Core report; assumes it is safe to call the Zigbee SDK directly (lock held, or running
+// inside a Zigbee callback per esp_zb_lock_acquire()'s contract).
+bool ZigbeeWaterMeter::_report(uint32_t liters) {
   esp_zb_uint48_t zb_value = {.low = liters, .high = 0};
-
-  esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_zcl_status_t status = esp_zb_zcl_set_attribute_val(
     _endpoint, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
     ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, &zb_value, false
   );
-  esp_zb_lock_release();
   if (status != ESP_ZB_ZCL_STATUS_SUCCESS) return false;
 
   esp_zb_zcl_report_attr_cmd_t cmd = {};
@@ -82,11 +83,14 @@ bool ZigbeeWaterMeter::reportReadingLiters(uint32_t liters) {
   cmd.zcl_basic_cmd.src_endpoint = _endpoint;
   cmd.manuf_code       = ESP_ZB_ZCL_ATTR_NON_MANUFACTURER_SPECIFIC;
   cmd.dis_default_resp = 0;
+  return esp_zb_zcl_report_attr_cmd_req(&cmd) == ESP_OK;
+}
 
+bool ZigbeeWaterMeter::reportReadingLiters(uint32_t liters) {
   esp_zb_lock_acquire(portMAX_DELAY);
-  esp_err_t ret = esp_zb_zcl_report_attr_cmd_req(&cmd);
+  bool ok = _report(liters);
   esp_zb_lock_release();
-  return ret == ESP_OK;
+  return ok;
 }
 
 
@@ -94,14 +98,16 @@ void ZigbeeWaterMeter::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t 
   DEBUG_PRINTLN("ep %d: zbAttributeSet cluster=0x%04x attr=0x%04x", _endpoint, message->info.cluster, message->attribute.id);
 
   if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_METERING) {
-    if (message->attribute.id == ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID
-        && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_U48) {
-      esp_zb_uint48_t *val = (esp_zb_uint48_t *)message->attribute.data.value;
-      uint32_t liters = val->low;
-      DEBUG_PRINTLN("ep %d: water_volume = %u L", _endpoint, liters);
+    // currentSummDelivered is read-only at the stack level; calibration comes in via
+    // this custom attribute instead (see ATTR_SET_VOLUME in the header).
+    if (message->attribute.id == ATTR_SET_VOLUME
+        && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_U32) {
+      uint32_t liters = *(uint32_t *)message->attribute.data.value;
+      DEBUG_PRINTLN("ep %d: set_volume = %u L", _endpoint, liters);
       if (_on_water_volume_changed != nullptr) {
         _on_water_volume_changed(liters);
       }
+      _report(liters);  // in a Zigbee callback: update + report currentSummDelivered directly
       return;
     }
 
