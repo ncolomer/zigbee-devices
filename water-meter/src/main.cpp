@@ -183,7 +183,7 @@ void loop() {
           rtc_reed_closed = true;
           connectZigbee();
           saveReading();
-          zbWaterMeter.reportReadingLiters(rtc_liters);
+          zbWaterMeter.setReadingLiters(rtc_liters);
           DEBUG_PRINTLN("Reported reading: %u L (%.3f m³)", rtc_liters, rtc_liters / 1000.0f);
           if (xSemaphoreTake(reportSem, pdMS_TO_TICKS(5000)) == pdTRUE) {
             DEBUG_PRINTLN("Report confirmed");

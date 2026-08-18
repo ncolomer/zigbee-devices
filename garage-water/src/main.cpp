@@ -216,7 +216,7 @@ void processMeters() {
     uint32_t delta = pulses - m.counted;
     m.counted = pulses;
     m.liters = min(m.liters + delta * m.liters_per_pulse, (uint32_t)99999999u);
-    m.zb->reportReadingLiters(m.liters);
+    m.zb->setReadingLiters(m.liters);
     saveMeterReading(m);
     DEBUG_PRINTLN("Meter %d: +%u pulse(s) -> %u L (%.3f m3)", i + 1, delta, m.liters, m.liters / 1000.0f);
   }

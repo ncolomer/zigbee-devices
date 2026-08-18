@@ -28,7 +28,10 @@ public:
     _on_liters_per_pulse_changed = callback;
   }
 
-  bool reportReadingLiters(uint32_t liters);
+  // Updates the reading and, by default, force-reports it. currentSummDelivered's automatic
+  // Zigbee reporting is non-functional on esp-zigbee-lib 1.6.8 (see esp-zigbee-sdk#758), so
+  // forceReport=false is currently a no-op for transmission; kept for future/other attributes.
+  bool setReadingLiters(uint32_t liters, bool forceReport = true);
 
 protected:
   void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) override;
@@ -37,7 +40,9 @@ private:
   esp_zb_attribute_list_t *_metering_cluster = nullptr;
 
   esp_zb_cluster_list_t *_createClusters();
-  bool _report(uint32_t liters);  // no lock; call with the Zigbee lock held or from a callback
+  // No lock; call with the Zigbee lock held or from a callback.
+  bool _setAttr(uint32_t liters);
+  bool _forceReport();
 
   std::function<void(uint32_t)> _on_water_volume_changed = nullptr;
   std::function<void(uint16_t)> _on_liters_per_pulse_changed = nullptr;

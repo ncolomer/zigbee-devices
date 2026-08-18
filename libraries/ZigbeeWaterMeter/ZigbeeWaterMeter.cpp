@@ -65,16 +65,19 @@ void ZigbeeWaterMeter::setDefaultLitersPerPulse(uint16_t liters_per_pulse) {
   esp_zb_cluster_update_attr(_metering_cluster, ATTR_LITERS_PER_PULSE, &liters_per_pulse);
 }
 
-// Core report; assumes it is safe to call the Zigbee SDK directly (lock held, or running
+// No lock; assumes it is safe to call the Zigbee SDK directly (lock held, or running
 // inside a Zigbee callback per esp_zb_lock_acquire()'s contract).
-bool ZigbeeWaterMeter::_report(uint32_t liters) {
+bool ZigbeeWaterMeter::_setAttr(uint32_t liters) {
   esp_zb_uint48_t zb_value = {.low = liters, .high = 0};
-  esp_zb_zcl_status_t status = esp_zb_zcl_set_attribute_val(
+  return esp_zb_zcl_set_attribute_val(
     _endpoint, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
     ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, &zb_value, false
-  );
-  if (status != ESP_ZB_ZCL_STATUS_SUCCESS) return false;
+  ) == ESP_ZB_ZCL_STATUS_SUCCESS;
+}
 
+// No lock. Forces an explicit report, bypassing Zigbee2MQTT's configured reporting interval —
+// used for calibration, where the user expects the new value to show up immediately.
+bool ZigbeeWaterMeter::_forceReport() {
   esp_zb_zcl_report_attr_cmd_t cmd = {};
   cmd.address_mode     = ESP_ZB_APS_ADDR_MODE_DST_ADDR_ENDP_NOT_PRESENT;
   cmd.attributeID      = ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID;
@@ -86,9 +89,10 @@ bool ZigbeeWaterMeter::_report(uint32_t liters) {
   return esp_zb_zcl_report_attr_cmd_req(&cmd) == ESP_OK;
 }
 
-bool ZigbeeWaterMeter::reportReadingLiters(uint32_t liters) {
+bool ZigbeeWaterMeter::setReadingLiters(uint32_t liters, bool forceReport) {
   esp_zb_lock_acquire(portMAX_DELAY);
-  bool ok = _report(liters);
+  bool ok = _setAttr(liters);
+  if (ok && forceReport) ok = _forceReport();
   esp_zb_lock_release();
   return ok;
 }
@@ -107,7 +111,8 @@ void ZigbeeWaterMeter::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t 
       if (_on_water_volume_changed != nullptr) {
         _on_water_volume_changed(liters);
       }
-      _report(liters);  // in a Zigbee callback: update + report currentSummDelivered directly
+      // Already in a Zigbee callback (no lock); force-report so the new value shows up now.
+      if (_setAttr(liters)) _forceReport();
       return;
     }
 
