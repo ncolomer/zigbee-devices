@@ -6,11 +6,8 @@
 #include "ZigbeeEP.h"
 #include <functional>
 
-// Custom attribute IDs (manufacturer-specific)
+// Custom attribute ID (manufacturer-specific)
 #define ATTR_LITERS_PER_PULSE 0xF001
-// currentSummDelivered is read-only at the stack level (can't be made writable on
-// esp-zigbee-lib 1.6.8), so calibration is done by writing this custom attribute instead.
-#define ATTR_SET_VOLUME       0xF000
 
 class ZigbeeWaterMeter : public ZigbeeEP {
 public:
@@ -28,10 +25,9 @@ public:
     _on_liters_per_pulse_changed = callback;
   }
 
-  // Updates the reading and, by default, force-reports it. currentSummDelivered's automatic
-  // Zigbee reporting is non-functional on esp-zigbee-lib 1.6.8 (see esp-zigbee-sdk#758), so
-  // forceReport=false is currently a no-op for transmission; kept for future/other attributes.
-  bool setReadingLiters(uint32_t liters, bool forceReport = true);
+  // Updates the reading. By default relies on Zigbee reporting (configured remotely, e.g. by
+  // Zigbee2MQTT) to decide when to actually transmit; pass forceReport to push it now.
+  bool setReadingLiters(uint32_t liters, bool forceReport = false);
 
 protected:
   void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) override;
