@@ -5,10 +5,12 @@
  * - state: ON = rain tank, OFF = grid water (latching, remembered across power loss)
  *
  * Endpoints 2 & 3 (meter1, meter2), seMetering:
- * - water_volume: cumulative volume (m³), read/write (writable for calibration). Backed by
- *   currentSummReceived, not currentSummDelivered — the latter's write/report access is
- *   hardcoded on esp-zigbee-lib 1.6.8 (esp-zigbee-sdk#856, #758); semantically repurposed,
- *   private-network-only workaround.
+ * - water_volume: cumulative volume (m³), read-only. Backed by currentSummReceived, not
+ *   currentSummDelivered — the latter's reporting is broken on esp-zigbee-lib 1.6.8
+ *   (esp-zigbee-sdk#758); semantically repurposed, private-network-only workaround. No standard
+ *   summation attribute is writable on this stack (esp-zigbee-sdk#856), so calibration goes
+ *   through set_volume instead.
+ * - set_volume: write-only calibration → custom 0xF000; firmware applies it and reports water_volume.
  * - liters_per_pulse: read/write 0xF001 (L), config.
  */
 
@@ -16,6 +18,7 @@ import {Zcl} from 'zigbee-herdsman';
 import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
 
 const ATTR_LITERS_PER_PULSE = 0xf001;
+const ATTR_SET_VOLUME = 0xf000;
 const METER_ENDPOINTS = ['meter1', 'meter2'];
 
 /** @type {import('zigbee-herdsman-converters/lib/types').DefinitionWithExtend} */
@@ -34,11 +37,23 @@ export default {
         m.numeric({
             endpointNames: METER_ENDPOINTS,
             name: 'water_volume',
-            description: 'Cumulative water volume in m³ (writable for calibration)',
-            access: 'ALL',
+            description: 'Cumulative water volume in m³',
+            access: 'STATE_GET',
             cluster: 'seMetering',
             attribute: 'currentSummReceived',
             reporting: {min: 0, max: 0xffff, change: 0},
+            unit: 'm³',
+            scale: 1000,
+            precision: 3,
+        }),
+        m.numeric({
+            endpointNames: METER_ENDPOINTS,
+            entityCategory: 'config',
+            name: 'set_volume',
+            description: 'Set/calibrate the cumulative water volume (m³)',
+            access: 'SET',
+            cluster: 'seMetering',
+            attribute: {ID: ATTR_SET_VOLUME, type: Zcl.DataType.UINT32},
             unit: 'm³',
             scale: 1000,
             precision: 3,

@@ -6,8 +6,12 @@
 #include "ZigbeeEP.h"
 #include <functional>
 
-// Custom attribute ID (manufacturer-specific)
+// Custom attribute IDs (manufacturer-specific)
 #define ATTR_LITERS_PER_PULSE 0xF001
+// No standard seMetering summation attribute (Delivered or Received) is writable on
+// esp-zigbee-lib 1.6.8, regardless of declared access — confirmed on-hardware for both
+// (esp-zigbee-sdk#856, #758). Calibration is done via this custom attribute instead.
+#define ATTR_SET_VOLUME       0xF000
 
 class ZigbeeWaterMeter : public ZigbeeEP {
 public:
