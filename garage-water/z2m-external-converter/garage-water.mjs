@@ -12,6 +12,12 @@
  *   through set_volume instead.
  * - set_volume: write-only calibration → custom 0xF000; firmware applies it and reports water_volume.
  * - liters_per_pulse: read/write 0xF001 (L), config.
+ *
+ * water_volume and liters_per_pulse's reporting is configured via one combined
+ * configureReporting() call per endpoint (see meteringReporting below) instead of each
+ * numeric()'s own `reporting` option — two separate back-to-back configureReporting commands
+ * on the same seMetering cluster were each individually ACKed by the device but silently never
+ * took effect, while one combined call (or a single manual add) works reliably.
  */
 
 import {Zcl} from 'zigbee-herdsman';
@@ -20,6 +26,22 @@ import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
 const ATTR_LITERS_PER_PULSE = 0xf001;
 const ATTR_SET_VOLUME = 0xf000;
 const METER_ENDPOINTS = ['meter1', 'meter2'];
+const METER_ENDPOINT_IDS = [2, 3];
+
+const meteringReporting = {
+    isModernExtend: true,
+    configure: [
+        async (device, coordinatorEndpoint) => {
+            for (const id of METER_ENDPOINT_IDS) {
+                const endpoint = device.getEndpoint(id);
+                await m.setupAttributes(endpoint, coordinatorEndpoint, 'seMetering', [
+                    {attribute: 'currentSummReceived', min: 0, max: 0xffff, change: 0},
+                    {attribute: {ID: ATTR_LITERS_PER_PULSE, type: Zcl.DataType.UINT16}, min: 0, max: 0xffff, change: 0},
+                ]);
+            }
+        },
+    ],
+};
 
 /** @type {import('zigbee-herdsman-converters/lib/types').DefinitionWithExtend} */
 export default {
@@ -41,7 +63,6 @@ export default {
             access: 'STATE_GET',
             cluster: 'seMetering',
             attribute: 'currentSummReceived',
-            reporting: {min: 0, max: 0xffff, change: 0},
             unit: 'm³',
             scale: 1000,
             precision: 3,
@@ -69,12 +90,12 @@ export default {
             access: 'ALL',
             cluster: 'seMetering',
             attribute: {ID: ATTR_LITERS_PER_PULSE, type: Zcl.DataType.UINT16},
-            reporting: {min: 0, max: 0xffff, change: 0},
             unit: 'L',
             valueMin: 1,
             valueMax: 1000,
             valueStep: 1,
         }),
+        meteringReporting,
     ],
     meta: {
         multiEndpoint: true,
