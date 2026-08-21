@@ -223,8 +223,7 @@ void processMeters() {
 }
 
 void setup() {
-  // Hold the relay de-energized (= tank, safe default) during the boot window,
-  // before ZigbeeRelaySwitch::begin() takes the pin over as a driven output.
+  // Hold the relay de-energized (= tank, safe default) until ZigbeeRelaySwitch::begin() drives the pin.
   pinMode(RELAY_PIN, INPUT_PULLUP);
   pinMode(BUTTON_PIN, INPUT);
 

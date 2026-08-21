@@ -5,17 +5,12 @@
  * - state: ON = rain tank, OFF = grid water (latching, remembered across power loss)
  *
  * Endpoints 2 & 3 (meter1, meter2), seMetering:
- * - water_volume: cumulative volume (m³), read-only. Backed by currentSummReceived, not
- *   currentSummDelivered — the latter's reporting is broken on esp-zigbee-lib 1.6.8
- *   (esp-zigbee-sdk#758); semantically repurposed, private-network-only workaround. No standard
- *   summation attribute is writable on this stack (esp-zigbee-sdk#856), so calibration goes
- *   through set_volume instead.
+ * - water_volume: cumulative volume (m³), read-only, backed by currentSummReceived.
  * - set_volume: write-only calibration → custom 0xF000; firmware applies it and reports water_volume.
  * - liters_per_pulse: read/write 0xF001 (L), config.
  *
- * Reporting `max` must stay below 0xffff: zigbee-herdsman's Endpoint.configureReporting()
- * treats maxRepIntval === 0xffff as "not actually configured" and skips recording it, even
- * though the device still ACKs the command — so reports are configured but never tracked/fire.
+ * Reporting `max` must stay below 0xffff — zigbee-herdsman treats that value as "cancel
+ * reporting" (ZCL §2.5.7.1.6), not a long interval.
  */
 
 import {Zcl} from 'zigbee-herdsman';

@@ -8,9 +8,7 @@
 
 // Custom attribute IDs (manufacturer-specific)
 #define ATTR_LITERS_PER_PULSE 0xF001
-// No standard seMetering summation attribute (Delivered or Received) is writable on
-// esp-zigbee-lib 1.6.8, regardless of declared access — confirmed on-hardware for both
-// (esp-zigbee-sdk#856, #758). Calibration is done via this custom attribute instead.
+// seMetering summation attributes aren't writable on esp-zigbee-lib 1.6.8; calibrate via this instead.
 #define ATTR_SET_VOLUME       0xF000
 
 class ZigbeeWaterMeter : public ZigbeeEP {
@@ -29,8 +27,7 @@ public:
     _on_liters_per_pulse_changed = callback;
   }
 
-  // Updates the reading. By default relies on Zigbee reporting (configured remotely, e.g. by
-  // Zigbee2MQTT) to decide when to actually transmit; pass forceReport to push it now.
+  // forceReport bypasses the configured reporting interval to transmit immediately.
   bool setReadingLiters(uint32_t liters, bool forceReport = false);
 
 protected:
