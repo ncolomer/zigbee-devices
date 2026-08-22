@@ -8,6 +8,8 @@
 
 // Custom attribute IDs (manufacturer-specific)
 #define ATTR_LITERS_PER_PULSE 0xF001
+// seMetering summation attributes aren't writable on esp-zigbee-lib 1.6.8; calibrate via this instead.
+#define ATTR_SET_VOLUME       0xF000
 
 class ZigbeeWaterMeter : public ZigbeeEP {
 public:
@@ -25,7 +27,8 @@ public:
     _on_liters_per_pulse_changed = callback;
   }
 
-  bool reportReadingLiters(uint32_t liters);
+  // forceReport bypasses the configured reporting interval to transmit immediately.
+  bool setReadingLiters(uint32_t liters, bool forceReport = false);
 
 protected:
   void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) override;
@@ -34,6 +37,9 @@ private:
   esp_zb_attribute_list_t *_metering_cluster = nullptr;
 
   esp_zb_cluster_list_t *_createClusters();
+  // No lock; call with the Zigbee lock held or from a callback.
+  bool _setAttr(uint32_t liters);
+  bool _forceReport();
 
   std::function<void(uint32_t)> _on_water_volume_changed = nullptr;
   std::function<void(uint16_t)> _on_liters_per_pulse_changed = nullptr;

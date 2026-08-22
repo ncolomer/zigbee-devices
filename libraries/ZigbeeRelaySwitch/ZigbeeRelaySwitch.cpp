@@ -71,7 +71,13 @@ void ZigbeeRelaySwitch::_applyIdleState() {
 
 void ZigbeeRelaySwitch::begin() {
   pinMode(_gpio_pin, OUTPUT);
-  _applyIdleState();
+  if (_relay_state) {
+    // restore a persisted "on" state (toggle mode); default is off/idle
+    uint8_t active_level = (_switch_actions == 0) ? HIGH : LOW;
+    digitalWrite(_gpio_pin, active_level);
+  } else {
+    _applyIdleState();
+  }
 }
 
 void ZigbeeRelaySwitch::setDefaultPulseDuration(uint16_t pulseDurationMs) {
@@ -87,6 +93,12 @@ void ZigbeeRelaySwitch::setDefaultSwitchType(uint8_t switchType) {
 void ZigbeeRelaySwitch::setDefaultSwitchActions(uint8_t switchActions) {
   _switch_actions = switchActions;
   esp_zb_cluster_update_attr(_switch_cfg_cluster, ZB_ATTR_SWITCH_CFG_SWITCH_ACTIONS, &switchActions);
+}
+
+void ZigbeeRelaySwitch::setDefaultOnOff(bool state) {
+  _relay_state = state;
+  bool value = state;
+  esp_zb_cluster_update_attr(_on_off_cluster, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, &value);
 }
 
 bool ZigbeeRelaySwitch::setOnOff(bool state) {
@@ -130,6 +142,9 @@ void ZigbeeRelaySwitch::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t
         uint8_t active_level = (_switch_actions == 0) ? HIGH : LOW;
         digitalWrite(_gpio_pin, value ? active_level : !active_level);
         DEBUG_PRINTLN("ep %d: relay %s", _endpoint, value ? "ON" : "OFF");
+        if (_on_state_changed != nullptr) {
+          _on_state_changed(value);
+        }
       }
       return;
     }

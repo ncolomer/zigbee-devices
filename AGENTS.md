@@ -165,6 +165,12 @@ Shared libraries live in `libraries/` at the repo root and are referenced via `l
 - When implementing firmware, consider how attributes will be exposed via converters
 - Ensure device exposes standard Zigbee clusters that converters can interpret
 
+**ZCL Configure Reporting sentinels — never use as literal intervals:**
+- `max: 0xFFFF` means "cancel reporting for this attribute" (ZCL §2.5.7.1.6), not a long interval.
+  `zigbee-herdsman` drops it from its own tracking with no error, so reporting silently never
+  fires. Use a real value like `65000` instead.
+- `max: 0x0000` + `min: 0xFFFF` together mean "revert to default reporting config".
+
 ## Debugging & Development
 
 - Use the shared `libraries/Debug/Debug.h` library for debug output:
