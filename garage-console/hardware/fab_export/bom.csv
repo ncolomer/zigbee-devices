@@ -1,0 +1,8 @@
+"Designator","Comment","Footprint","LCSC Part #"
+"C1,C3-C18","100nF","Capacitor_SMD:C_0805_2012Metric","C49678"
+"C2","10uF","Capacitor_SMD:C_0805_2012Metric","C15850"
+"J1-J16","XH-2P","Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical","C158012"
+"R1,R2","4.7k","Resistor_SMD:R_0805_2012Metric","C17673"
+"R3","10k","Resistor_SMD:R_0805_2012Metric","C17414"
+"U1","XIAO-ESP32-C6","Seeed_Studio_XIAO_Series:XIAO-ESP32-C6-DIP","C27675191"
+"U2","PCF8575","Package_SO:SSOP-24_5.3x8.2mm_P0.65mm","C2863388"

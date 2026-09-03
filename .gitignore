@@ -10,3 +10,12 @@ node_modules/
 
 # macOS
 .DS_Store
+.claude/
+*.zip
+
+# KiCad build artifacts / backups
+*.dsn
+*.ses
+~*.lck
+*-backups/
+.history/
