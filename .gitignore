@@ -19,3 +19,14 @@ node_modules/
 ~*.lck
 *-backups/
 .history/
+
+# KiCad fabrication/assembly exports (regenerate via Konnect export_manufacturing_package
+# and/or kicad-jlcpcb-tools; not source, don't track)
+**/hardware/fab_export/
+**/hardware/jlcpcb/
+
+# KiCad scratch/calibration project files (temporary test boards, not the real design)
+**/hardware/*-calib.kicad_pro
+**/hardware/*-calib.kicad_prl
+**/hardware/*-test3d.kicad_pro
+**/hardware/*-test3d.kicad_prl

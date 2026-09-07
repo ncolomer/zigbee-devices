@@ -1652,6 +1652,412 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "garage_console:XIAO_HDR_A"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "HDR"
+				(at 0 12.7000 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Header_1x7_2.54mm"
+				(at 0 -12.7000 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "XIAO_HDR_A_0_1"
+				(rectangle
+					(start -24.1300 -10.1600)
+					(end -3.8100 10.1600)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at -1.27 7.62 180)
+					(length 2.54)
+					(name "GPIO0_A0_D0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -1.27 5.08 180)
+					(length 2.54)
+					(name "GPIO1_A1_D1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -1.27 2.54 180)
+					(length 2.54)
+					(name "PCF_INT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -1.27 0 180)
+					(length 2.54)
+					(name "GPIO21_D3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -1.27 -2.54 180)
+					(length 2.54)
+					(name "SDA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -1.27 -5.08 180)
+					(length 2.54)
+					(name "SCL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -1.27 -7.62 180)
+					(length 2.54)
+					(name "GPIO16_D6_TX"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "garage_console:XIAO_HDR_B"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "HDR"
+				(at 0 12.7000 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Header_1x7_2.54mm"
+				(at 0 -12.7000 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "XIAO_HDR_B_0_1"
+				(rectangle
+					(start -25.4000 -10.1600)
+					(end -2.5400 10.1600)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at 0 7.62 180)
+					(length 2.54)
+					(name "GPIO17_D7_RX"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 5.08 180)
+					(length 2.54)
+					(name "GPIO19_D8_SCK"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 2.54 180)
+					(length 2.54)
+					(name "GPIO20_D9_MISO"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 0 180)
+					(length 2.54)
+					(name "GPIO18_D10_MOSI"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -2.54 180)
+					(length 2.54)
+					(name "+3V3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -5.08 180)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -7.62 180)
+					(length 2.54)
+					(name "VBUS"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 	)
 	(no_connect
 		(at 55.88 69.85)
@@ -1688,6 +2094,151 @@
 	(no_connect
 		(at 93.98 69.85)
 		(uuid "4b28ec5a-9fbf-4abb-9dbb-d2f537c506ea")
+	)
+	(no_connect
+		(at 74.93 132.08)
+		(uuid "2f68b725-b115-41fd-accf-b243f78da24b")
+	)
+	(no_connect
+		(at 74.93 134.62)
+		(uuid "6b619a0f-b570-4371-82de-f9ed91ad3dd8")
+	)
+	(no_connect
+		(at 74.93 139.7)
+		(uuid "491b2e9c-1527-48bc-aa27-d3d49cc8789d")
+	)
+	(no_connect
+		(at 74.93 147.32)
+		(uuid "9497c583-966f-4ad6-8cde-145c0d53c457")
+	)
+	(no_connect
+		(at 76.2 172.72)
+		(uuid "cad45a74-ca5f-4245-9650-27b9934634fe")
+	)
+	(no_connect
+		(at 76.2 175.26)
+		(uuid "4970d6d9-8b9a-4a9c-9809-bb65cd293105")
+	)
+	(no_connect
+		(at 76.2 177.8)
+		(uuid "8caef0aa-268f-4a1c-9c6f-5561881f6856")
+	)
+	(no_connect
+		(at 76.2 180.34)
+		(uuid "a31fe194-bf16-498e-bcd4-66a16b3dbe46")
+	)
+	(no_connect
+		(at 76.2 187.96)
+		(uuid "b4ad22c1-79b7-498d-baf5-b3fae16e3bba")
+	)
+	(no_connect
+		(at 76.2 172.72)
+		(uuid "d9fdbf06-1a3f-4a17-8bc0-c8eaadf314b4")
+	)
+	(no_connect
+		(at 76.2 175.26)
+		(uuid "0dbc18a9-1647-4922-8929-faa61a66b33b")
+	)
+	(no_connect
+		(at 76.2 177.8)
+		(uuid "5df9f8aa-f1cd-4287-8050-f14c6a94fe8f")
+	)
+	(no_connect
+		(at 76.2 180.34)
+		(uuid "15a186f5-e03e-4209-ab33-15236db1257b")
+	)
+	(no_connect
+		(at 76.2 187.96)
+		(uuid "8c97e8aa-e37e-40f2-933b-b55256a4d15b")
+	)
+	(wire
+		(pts
+			(xy 74.93 137.16)
+			(xy 77.47 137.16)
+		)
+		(uuid "b80e33dd-3981-4010-9dab-166e6b6907c3")
+	)
+	(wire
+		(pts
+			(xy 74.93 142.24)
+			(xy 77.47 142.24)
+		)
+		(uuid "a687cff9-b00b-471d-9d28-092f38912bdb")
+	)
+	(wire
+		(pts
+			(xy 74.93 144.78)
+			(xy 77.47 144.78)
+		)
+		(uuid "006c9e68-8a61-4492-80f0-90aa60320d3d")
+	)
+	(wire
+		(pts
+			(xy 76.2 182.88)
+			(xy 78.74 182.88)
+		)
+		(uuid "8a5d4477-0cba-409c-9a67-6342c0602b7a")
+	)
+	(wire
+		(pts
+			(xy 76.2 185.42)
+			(xy 78.74 185.42)
+		)
+		(uuid "ad270be3-2420-4ea3-bf44-faaa0afb5d63")
+	)
+	(wire
+		(pts
+			(xy 76.2 182.88)
+			(xy 78.74 182.88)
+		)
+		(uuid "bb28ccfd-c8b3-45cc-80c8-3f06f724b0d8")
+	)
+	(wire
+		(pts
+			(xy 76.2 185.42)
+			(xy 78.74 185.42)
+		)
+		(uuid "da46fc9f-bdad-4b98-99eb-b73a2198db77")
+	)
+	(text "garage-console  --  16x switch input carrier for Seeed Studio XIAO ESP32C6"
+		(at 15.24 17.78 0)
+		(effects
+			(font
+				(size 3.5 3.5)
+			)
+			(justify left bottom)
+		)
+		(uuid "33ca1579-8cdc-42b7-bbf2-c8bd46159148")
+	)
+	(text "J1..J16: JST XH 2.50mm, board-side B2B-XH-A vertical (top entry).\nEach connector = GND + one dedicated switch input. Momentary or toggle,\neither way the firmware sees the pin pulled low while the contact is closed."
+		(at 246.38 220.98 0)
+		(effects
+			(font
+				(size 1.7 1.7)
+			)
+			(justify left bottom)
+		)
+		(uuid "939e0761-e13a-4f61-ba28-74d47d971e84")
+	)
+	(text "PCF8575 (U2) -- I/O EXPANDER\nChosen over the MCP23017 because MCP23017's GPA7/GPB7 are output-only\n(DS20001952D p.11), which leaves only 14 usable inputs for 16 switches.\n\nA2:A1:A0 = GND -> I2C 7-bit address 0x20. Address pins tie straight to a\nrail; the datasheet says they need no pull-ups.\n\nAll 16 ports are used as inputs: write 0xFFFF once, then each pin sources\nIOH = 30..300 uA to VCC and a closed switch shorts it to GND. There are no\ndirection registers on this part -- that write IS the input configuration.\n\nINT (U2.1) is open-drain active-low, so R3 pulls it up. Any port edge\nasserts it; reading the port clears it.\n\nC3..C18 (100nF) filter EMI picked up on the switch cabling and debounce\nthe contact. The release edge is deliberately slow, ~8 ms worst case at\nIOH min -- fine for switches, so no external pull-ups are fitted."
+		(at 15.24 241.3 0)
+		(effects
+			(font
+				(size 1.7 1.7)
+			)
+			(justify left bottom)
+		)
+		(uuid "35c10f64-0962-461f-a045-1698b29e9686")
+	)
+	(text "POWER\nFed from the XIAO's own USB-C. +3V3 is the XIAO on-module LDO (U1.12).\nNo battery / charger: unlike the Grove Shield this reference is based on,\nthe board is permanently USB-powered, so that circuitry is dropped.\nNo power LED either -- the XIAO's own LED_BUILTIN covers it."
+		(at 15.24 190.5 0)
+		(effects
+			(font
+				(size 1.7 1.7)
+			)
+			(justify left bottom)
+		)
+		(uuid "726596d2-e09c-4192-8b63-650d29a445ef")
 	)
 	(label "+3V3"
 		(at 93.98 77.47 0)
@@ -2719,98 +3270,96 @@
 		)
 		(uuid "ad21a757-51c9-4f6d-8540-36f51435cf83")
 	)
-  (label "+3V3"
-    (at 111.76 58.42 0)
-    (fields_autoplaced yes)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid "185a2c79-60c7-4fc1-bd96-24e90bd51df8")
-  )
-  (label "GND"
-    (at 111.76 68.58 0)
-    (fields_autoplaced yes)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid "cc662b19-a17e-4143-bf9e-c335ab728acd")
-  )
-  (text "garage-console  --  16x switch input carrier for Seeed Studio XIAO ESP32C6"
-    (at 15.24 17.78 0)
-    (effects (font (size 3.5 3.5)) (justify left bottom))
-    (uuid "33ca1579-8cdc-42b7-bbf2-c8bd46159148")
-  )
-  (text "J1..J16: JST XH 2.50mm, board-side B2B-XH-A vertical (top entry).\nEach connector = GND + one dedicated switch input. Momentary or toggle,\neither way the firmware sees the pin pulled low while the contact is closed."
-    (at 246.38 220.98 0)
-    (effects (font (size 1.7 1.7)) (justify left bottom))
-    (uuid "939e0761-e13a-4f61-ba28-74d47d971e84")
-  )
-  (text "PCF8575 (U2) -- I/O EXPANDER\nChosen over the MCP23017 because MCP23017's GPA7/GPB7 are output-only\n(DS20001952D p.11), which leaves only 14 usable inputs for 16 switches.\n\nA2:A1:A0 = GND -> I2C 7-bit address 0x20. Address pins tie straight to a\nrail; the datasheet says they need no pull-ups.\n\nAll 16 ports are used as inputs: write 0xFFFF once, then each pin sources\nIOH = 30..300 uA to VCC and a closed switch shorts it to GND. There are no\ndirection registers on this part -- that write IS the input configuration.\n\nINT (U2.1) is open-drain active-low, so R3 pulls it up. Any port edge\nasserts it; reading the port clears it.\n\nC3..C18 (100nF) filter EMI picked up on the switch cabling and debounce\nthe contact. The release edge is deliberately slow, ~8 ms worst case at\nIOH min -- fine for switches, so no external pull-ups are fitted."
-    (at 15.24 241.3 0)
-    (effects (font (size 1.7 1.7)) (justify left bottom))
-    (uuid "35c10f64-0962-461f-a045-1698b29e9686")
-  )
-  (text "POWER\nFed from the XIAO's own USB-C. +3V3 is the XIAO on-module LDO (U1.12).\nNo battery / charger: unlike the Grove Shield this reference is based on,\nthe board is permanently USB-powered, so that circuitry is dropped.\nNo power LED either -- the XIAO's own LED_BUILTIN covers it."
-    (at 15.24 190.5 0)
-    (effects (font (size 1.7 1.7)) (justify left bottom))
-    (uuid "726596d2-e09c-4192-8b63-650d29a445ef")
-  )
-	(symbol
-		(lib_id "Seeed_Studio_XIAO_Series:XIAO-ESP32-C6-DIP")
-		(at 76.2 76.2 0)
-		(unit 1)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "2b738760-25f1-4ea9-8c16-8dafe1d6e0b2")
-		(property "Reference" "U1"
-			(at 59.436 64.516 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
+	(label "+3V3"
+		(at 111.76 58.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-		(property "Value" "XIAO-ESP32-C6"
-			(at 69.088 66.294 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
+		(uuid "185a2c79-60c7-4fc1-bd96-24e90bd51df8")
+	)
+	(label "GND"
+		(at 111.76 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-		(property "Footprint" "Seeed_Studio_XIAO_Series:XIAO-ESP32-C6-DIP"
-			(at 76.2 76.2 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
+		(uuid "cc662b19-a17e-4143-bf9e-c335ab728acd")
+	)
+	(label "PCF_INT"
+		(at 77.47 137.16 0)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-		(property "Datasheet" "https://files.seeedstudio.com/Bazaar/product_pdf/113991254.pdf"
-			(at 76.2 76.2 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
+		(uuid "0c6c299d-501a-4418-98da-3e6db20c2358")
+	)
+	(label "SDA"
+		(at 77.47 142.24 0)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "U1")
-					(unit 1)
-				)
+		(uuid "862d4341-23d9-4e81-8904-42386630b1a4")
+	)
+	(label "SCL"
+		(at 77.47 144.78 0)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-	
-		(property "LCSC" "C27675191"
-			(at 76.2 76.2 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
+		(uuid "45d89e8c-9e32-42cc-a2e5-f9ee2aa1a6ea")
+	)
+	(label "+3V3"
+		(at 78.74 182.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
-		))
+			(justify left bottom)
+		)
+		(uuid "270ea972-a732-441f-91d4-9956305a42a1")
+	)
+	(label "GND"
+		(at 78.74 185.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "befdcec4-968e-4afa-a2cc-f0244f84b403")
+	)
+	(label "+3V3"
+		(at 78.74 182.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c81e5684-205e-4895-9883-252975f6e77e")
+	)
+	(label "GND"
+		(at 78.74 185.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0448c49b-a9d6-4ee3-b239-174a6a09e77b")
+	)
 	(symbol
 		(lib_id "Interface_Expansion:PCF8575DBR")
 		(at 180.34 129.54 0)
@@ -2853,15 +3402,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "U2")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C2863388"
 			(at 180.34 129.54 0)
 			(hide yes)
@@ -2870,7 +3410,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:R")
 		(at 119.38 40.64 0)
@@ -2913,15 +3462,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "R1")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C17673"
 			(at 119.38 40.64 0)
 			(hide yes)
@@ -2930,7 +3470,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:R")
 		(at 134.62 40.64 0)
@@ -2973,15 +3522,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "R2")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C17673"
 			(at 134.62 40.64 0)
 			(hide yes)
@@ -2990,7 +3530,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "R2")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:R")
 		(at 149.86 40.64 0)
@@ -3033,15 +3582,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "R3")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C17414"
 			(at 149.86 40.64 0)
 			(hide yes)
@@ -3050,7 +3590,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "R3")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 203.2 40.64 0)
@@ -3095,15 +3644,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C1")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 203.2 40.64 0)
 			(hide yes)
@@ -3112,7 +3652,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C1")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 218.44 40.64 0)
@@ -3157,15 +3706,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C2")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C15850"
 			(at 218.44 40.64 0)
 			(hide yes)
@@ -3174,7 +3714,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C2")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 297.18 35.56 0)
@@ -3217,15 +3766,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J1")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 297.18 35.56 0)
 			(hide yes)
@@ -3234,7 +3774,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 297.18 58.42 0)
@@ -3277,15 +3826,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J2")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 297.18 58.42 0)
 			(hide yes)
@@ -3294,7 +3834,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J2")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 297.18 81.28 0)
@@ -3337,15 +3886,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J3")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 297.18 81.28 0)
 			(hide yes)
@@ -3354,7 +3894,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J3")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 297.18 104.14 0)
@@ -3397,15 +3946,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J4")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 297.18 104.14 0)
 			(hide yes)
@@ -3414,7 +3954,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J4")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 297.18 127 0)
@@ -3457,15 +4006,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J5")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 297.18 127 0)
 			(hide yes)
@@ -3474,7 +4014,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J5")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 297.18 149.86 0)
@@ -3517,15 +4066,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J6")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 297.18 149.86 0)
 			(hide yes)
@@ -3534,7 +4074,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J6")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 297.18 172.72 0)
@@ -3577,15 +4126,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J7")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 297.18 172.72 0)
 			(hide yes)
@@ -3594,7 +4134,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J7")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 297.18 195.58 0)
@@ -3637,15 +4186,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J8")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 297.18 195.58 0)
 			(hide yes)
@@ -3654,7 +4194,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J8")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 386.08 35.56 0)
@@ -3697,15 +4246,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J9")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 386.08 35.56 0)
 			(hide yes)
@@ -3714,7 +4254,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J9")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 386.08 58.42 0)
@@ -3757,15 +4306,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J10")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 386.08 58.42 0)
 			(hide yes)
@@ -3774,7 +4314,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J10")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 386.08 81.28 0)
@@ -3817,15 +4366,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J11")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 386.08 81.28 0)
 			(hide yes)
@@ -3834,7 +4374,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J11")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 386.08 104.14 0)
@@ -3877,15 +4426,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J12")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 386.08 104.14 0)
 			(hide yes)
@@ -3894,7 +4434,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J12")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 386.08 127 0)
@@ -3937,15 +4486,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J13")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 386.08 127 0)
 			(hide yes)
@@ -3954,7 +4494,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 386.08 149.86 0)
@@ -3997,15 +4546,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J14")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 386.08 149.86 0)
 			(hide yes)
@@ -4014,7 +4554,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J14")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 386.08 172.72 0)
@@ -4057,15 +4606,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J15")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 386.08 172.72 0)
 			(hide yes)
@@ -4074,7 +4614,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J15")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 386.08 195.58 0)
@@ -4117,15 +4666,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "J16")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C158012"
 			(at 386.08 195.58 0)
 			(hide yes)
@@ -4134,7 +4674,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "J16")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 266.7 35.56 0)
@@ -4179,15 +4728,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C3")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 266.7 35.56 0)
 			(hide yes)
@@ -4196,7 +4736,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C3")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 266.7 58.42 0)
@@ -4241,15 +4790,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C4")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 266.7 58.42 0)
 			(hide yes)
@@ -4258,7 +4798,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C4")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 266.7 81.28 0)
@@ -4303,15 +4852,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C5")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 266.7 81.28 0)
 			(hide yes)
@@ -4320,7 +4860,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C5")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 266.7 104.14 0)
@@ -4365,15 +4914,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C6")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 266.7 104.14 0)
 			(hide yes)
@@ -4382,7 +4922,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C6")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 266.7 127 0)
@@ -4427,15 +4976,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C7")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 266.7 127 0)
 			(hide yes)
@@ -4444,7 +4984,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C7")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 266.7 149.86 0)
@@ -4489,15 +5038,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C8")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 266.7 149.86 0)
 			(hide yes)
@@ -4506,7 +5046,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C8")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 266.7 172.72 0)
@@ -4551,15 +5100,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C9")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 266.7 172.72 0)
 			(hide yes)
@@ -4568,7 +5108,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C9")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 266.7 195.58 0)
@@ -4613,15 +5162,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C10")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 266.7 195.58 0)
 			(hide yes)
@@ -4630,7 +5170,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C10")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 355.6 35.56 0)
@@ -4675,15 +5224,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C11")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 355.6 35.56 0)
 			(hide yes)
@@ -4692,7 +5232,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C11")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 355.6 58.42 0)
@@ -4737,15 +5286,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C12")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 355.6 58.42 0)
 			(hide yes)
@@ -4754,7 +5294,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C12")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 355.6 81.28 0)
@@ -4799,15 +5348,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C13")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 355.6 81.28 0)
 			(hide yes)
@@ -4816,7 +5356,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C13")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 355.6 104.14 0)
@@ -4861,15 +5410,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C14")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 355.6 104.14 0)
 			(hide yes)
@@ -4878,7 +5418,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C14")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 355.6 127 0)
@@ -4923,15 +5472,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C15")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 355.6 127 0)
 			(hide yes)
@@ -4940,7 +5480,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C15")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 355.6 149.86 0)
@@ -4985,15 +5534,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C16")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 355.6 149.86 0)
 			(hide yes)
@@ -5002,7 +5542,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C16")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 355.6 172.72 0)
@@ -5047,15 +5596,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C17")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 355.6 172.72 0)
 			(hide yes)
@@ -5064,7 +5604,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C17")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 355.6 195.58 0)
@@ -5109,15 +5658,6 @@
 				)
 			)
 		)
-		(instances
-			(project "garage-console"
-				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "C18")
-					(unit 1)
-				)
-			)
-		)
-	
 		(property "LCSC" "C49678"
 			(at 355.6 195.58 0)
 			(hide yes)
@@ -5126,7 +5666,16 @@
 					(size 1.27 1.27)
 				)
 			)
-		))
+		)
+		(instances
+			(project "garage-console"
+				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "C18")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 111.76 58.42 0)
@@ -5226,6 +5775,144 @@
 			(project "garage-console"
 				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
 					(reference "#FLG2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "garage_console:XIAO_HDR_A")
+		(at 76.2 139.7 0)
+		(unit 1)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "47b22d40-e735-493b-8bc6-1f1014097e79")
+		(property "Reference" "HDR1"
+			(at 76.2 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Header_1x7_2.54mm"
+			(at 76.2 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical"
+			(at 76.2 139.7 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 76.2 139.7 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 76.2 139.7 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C22438157"
+			(at 76.2 139.7 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "garage-console"
+				(path "/931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "HDR1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "garage_console:XIAO_HDR_B")
+		(at 76.2 180.34 0)
+		(unit 1)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "02b51005-680e-4f18-9068-72c0966eaaa2")
+		(property "Reference" "HDR2"
+			(at 76.2 167.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Header_1x7_2.54mm"
+			(at 76.2 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical"
+			(at 76.2 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 76.2 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 76.2 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C22438157"
+			(at 76.2 180.34 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "garage-console"
+				(path "/931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
+					(reference "HDR2")
 					(unit 1)
 				)
 			)

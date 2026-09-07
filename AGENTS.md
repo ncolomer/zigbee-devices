@@ -7,6 +7,7 @@
 **Framework:** Arduino 3
 **Platform:** https://github.com/pioarduino/platform-espressif32
 **Board:** `seeed_xiao_esp32c6`
+**PCB Design:** KiCad 10, edited exclusively via the Konnect MCP server
 
 **Key Rules:**
 - Keep code simple, not defensive (DIY philosophy)
@@ -117,8 +118,20 @@ project-name/
 ├── platformio.ini
 ├── src/
 │   └── main.cpp
-└── z2m-external-converter/   # Zigbee2MQTT external converter (if needed)
+├── z2m-external-converter/   # Zigbee2MQTT external converter (if needed)
+└── hardware/                 # KiCad schematic/PCB project, if hardware is co-located
+    ├── project-name.kicad_pro
+    ├── project-name.kicad_sch
+    ├── project-name.kicad_pcb
+    ├── fp-lib-table           # project-local footprint library table
+    ├── sym-lib-table          # project-local symbol library table
+    ├── 3dmodels/
+    ├── datasheets/
+    ├── fab_export/            # BOM, positions, gerbers for assembly
+    └── jlcpcb/                # JLCPCB plugin exports, if used
 ```
+
+See `garage-console/hardware` for the established reference layout.
 
 Shared libraries live in `libraries/` at the repo root and are referenced via `lib_extra_dirs = ../libraries` in each project's `platformio.ini`.
 
@@ -205,6 +218,19 @@ uint16_t val = nvs.getUShort("key", defaultValue);
 nvs.putUShort("key", val);
 nvs.end();
 ```
+
+## Hardware / PCB Work (KiCad 10 + Konnect MCP)
+
+Hardware design files live alongside firmware in each project's `hardware/` folder (see `garage-console/hardware` for the established pattern). All PCB projects target **KiCad 10** and are edited through the **Konnect MCP server** — never a different KiCad version or a bare `kicad-cli`/GUI workflow without it. Explore Konnect's own tool catalog at runtime (it's self-describing); the notes below are gotchas that aren't obvious from the tool descriptions themselves. When editing `.kicad_pro`/`.kicad_sch`/`.kicad_pcb` files:
+
+- **Never hand-edit KiCad files with text tools.** They're serialized object graphs with UUIDs and cross-references — a text edit can silently corrupt them. Route changes through the Konnect MCP server (KiCad IPC + validated file editing), not `str_replace`/raw file writes.
+- **Prefer project-local library tables** (`fp-lib-table`/`sym-lib-table` inside `hardware/`, as `garage-console` already does) over relying on global KiCad library aliases defined only in this machine's KiCad config — a global alias doesn't travel with the repo and silently breaks the project for anyone else who clones it.
+- **Save before running DRC, never in the same batch/call.** DRC reads the saved file from disk; calling it alongside a save can read pre-save state and report stale results.
+- **Zone fills go stale after copper edits.** After routing a trace, adding a via, or moving a component near a copper pour, refill zones before trusting DRC output (native `B` / Fill All Zones in KiCad, or Konnect's `refill_zones` tool on 0.11.0+) — otherwise clearance violations can be false in either direction (phantom errors against an un-refreshed pour, or a false "clean" result).
+- **Pad geometry (size/shape/rotation) isn't exposed by Konnect's read tools** — `get_component_pads`/`get_footprint_info` return position/net/layer only. For precise clearance work near a pad edge, read the `.kicad_mod` file directly rather than estimating.
+- **`check_clearance` measures footprint-anchor-to-anchor distance, not real copper clearance** — don't use it to predict whether a trace/via will clash with a pad; it will silently return numbers many times larger than the real gap.
+- **No tool exists to delete a zone/copper pour** (`add_zone`/`add_copper_pour` are add-only; `delete_graphics` explicitly excludes zones; `delete_trace` now refuses non-trace UUIDs — see below). Rebuilding a pour currently has no supported path through Konnect; track upstream issue #431.
+- **`delete_trace` is type-safe as of the fix for upstream issue #412** (merged, Konnect 0.11.0+): it verifies the UUID is an actual trace on the requested board before deleting, and refuses vias/zones/graphics/footprints with a structured error instead of silently deleting them. On older Konnect versions it deleted any item type by UUID with no type confirmation — if you're ever on a pre-fix version, don't rely on it for anything but tracks, and verify board state after any bulk-delete batch.
 
 ## Testing & Validation
 

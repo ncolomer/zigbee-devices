@@ -41,10 +41,14 @@ purpose, so the board carries no LED of its own.
 | `garage-console.kicad_pcb` | Board layout |
 | `datasheets/` | Local copies of every datasheet the design relies on |
 | `3dmodels/` | Project-local STEP model(s) not available in any installed library |
+| `garage_console.pretty/` | Project-local footprint library — currently empty; kept registered in `fp-lib-table` rather than deregistered, see Layout |
+| `garage_console.kicad_sym` | Project-local symbol library — `XIAO_HDR_A`/`XIAO_HDR_B`, the named-pin schematic symbols behind HDR1/HDR2 |
 
 Libraries: stock KiCad symbols/footprints, plus `Seeed_Studio_XIAO_Series` from
 the [Seeed OPL KiCad library](https://github.com/Seeed-Studio/OPL_Kicad_Library)
-(registered project-scope in `fp-lib-table`).
+(registered project-scope in `fp-lib-table`), and the two project-local
+libraries above (registered project-scope in `fp-lib-table`/`sym-lib-table`
+under the `garage_console` nickname).
 
 ## Switch channel map
 
@@ -118,19 +122,28 @@ self-corrects.
 
 | Ref | Qty | Value | Footprint | LCSC | Notes |
 |---|---|---|---|---|---|
-| U1 | 1 | XIAO ESP32C6 | XIAO-ESP32-C6-DIP | — | Seeed 113991054, socketed or soldered |
 | U2 | 1 | PCF8575 | SSOP-24 0.65 mm | [C2863388](https://www.lcsc.com/product-detail/C2863388.html) | TI PCF8575DBR |
+| HDR1, HDR2 | 2 | Socket, 1×7, 2.54 mm | `PinSocket_1x07_P2.54mm_Vertical` | [C22438157](https://www.lcsc.com/product-detail/C22438157.html) | hanxia HX PM2.54-1x7P ZC-Y, female, 8.5 mm socket height; carry the XIAO module's real electrical connections, see Layout |
 | J1–J16 | 16 | JST XH 2-pin | B2B-XH-A vertical, 2.5 mm | [C158012](https://www.lcsc.com/product-detail/C158012.html) | cable side: XHP-2 housing + SXH-001T-P0.6 crimps |
 | C1 | 1 | 100 nF X7R | 0805 | [C49678](https://www.lcsc.com/product-detail/C49678.html) | U2 decoupling |
-| C2 | 1 | 10 µF X5R | 0805 | [C15850](https://www.lcsc.com/product-detail/C15850.html) | +3V3 bulk, next to U1's supply pin |
+| C2 | 1 | 10 µF X5R | 0805 | [C15850](https://www.lcsc.com/product-detail/C15850.html) | +3V3 bulk, next to the module's supply pin (HDR2) |
 | C3–C18 | 16 | 100 nF X7R | 0805 | [C49678](https://www.lcsc.com/product-detail/C49678.html) | input filter, one per channel |
 | R1, R2 | 2 | 4.7 kΩ | 0805 | [C17673](https://www.lcsc.com/product-detail/C17673.html) | I²C pull-ups (the XIAO has none) |
 | R3 | 1 | 10 kΩ | 0805 | [C17414](https://www.lcsc.com/product-detail/C17414.html) | PCF_INT pull-up |
-| H1–H4 | 4 | M3 | 3.2 mm NPTH | — | mounting |
 
-All passive LCSC numbers are JLCPCB Basic-library parts (no Extended-part assembly fee), picked for highest stock among matching value/footprint/tolerance. U2 and J1–J16 have no Basic-library equivalent — JST connectors and this specific I/O expander aren't stocked there — so both list the highest-stock Extended part matching the MPN already in the schematic.
+**The Seeed Studio XIAO ESP32C6 module itself is not in this BOM or schematic at all** — it
+carries no copper on this board (see Layout) and its own pinout isn't formally
+documented anywhere in this design beyond HDR1/HDR2's own pin names, so it's
+easy to read the BOM and schematic and not realize a module is needed at all.
+It must be sourced separately (Seeed 113991054), and its own DIP-14
+through-holes need a set of male 2.54 mm pins soldered in by hand — these
+plug into HDR1/HDR2's sockets, which is how the module is mounted.
 
-Every part above also carries its LCSC number as an `LCSC` field on the schematic symbol itself (not just this table), so it flows straight through KiCad's own BOM export and into `kicad-jlcpcb-tools`. U1 has no LCSC field — the XIAO module isn't an LCSC-stocked part.
+No mounting holes — this board lives inside an enclosure that doesn't need them.
+
+All passive LCSC numbers are JLCPCB Basic-library parts (no Extended-part assembly fee), picked for highest stock among matching value/footprint/tolerance. U2, J1–J16, and HDR1/HDR2 have no Basic-library equivalent — this specific I/O expander, the JST connectors, and 2.54 mm pin sockets aren't stocked there — so each lists the highest-stock Extended part matching the MPN already in the schematic.
+
+Every part above also carries its LCSC number as an `LCSC` field on the schematic symbol itself (not just this table), so it flows straight through KiCad's own BOM export and into `kicad-jlcpcb-tools`.
 
 Fab target: JLCPCB, 2 layer, 0.2 mm minimum trace and clearance. All passives are
 0805 — easier to hand-solder/rework than 0402, at the cost of a slightly larger
@@ -138,31 +151,168 @@ board.
 
 ## Layout
 
-U1 (XIAO) sits at the bottom of the board, USB-C facing the bottom edge for
-external cable access, centered horizontally. U2 (PCF8575) sits directly above
-it, also centered. Both are routed and ground-poured; nothing here needs
-hand-tweaking before fab.
+The board is a 169.3 × 21.2 mm horizontal strip (trimmed to the connectors'
+and module's actual extents — no unused margin, since there are no mounting
+holes to clear). The top and bottom edges are colinear with the module's real
+body (its footprint's `F.Courtyard`/`F.Fab` outline, back when it still had a
+dedicated footprint — not the USB-C connector's silkscreen mark, which is
+meant to hang off the edge — see below), not just "close to it". The left and
+right edges are mirrored around the connector block's own centerline
+(x = 93.15 mm) rather than the board's raw geometric center, which an earlier
+revision's asymmetric width trim had drifted 0.75 mm away from. The 16 JST
+connectors form two rows of 8 (one row per board edge), split into two
+4-connector blocks per row with U2/HDR1/HDR2 sitting in the gap between the
+blocks, centered both horizontally and vertically. The module's ceramic
+antenna faces the top edge (right at the board edge — see antenna clearance
+note below), USB-C faces the bottom edge. Each filter cap (C3–C18) is rotated
+90° from a naive placement so its short axis (1.25 mm) faces the tight
+left-right direction between connector columns, trading it for the board's
+more plentiful vertical room.
+
+**Filter caps are genuinely mirror-symmetric block-to-block.** Every JST
+footprint (rotation 0° in both blocks) extends 5.475 mm to its own right and
+only 2.975 mm to its left — an asymmetry baked into the footprint itself that
+doesn't flip between blocks, so a true mirror needs an *asymmetric* offset
+magnitude, not just an opposite sign. Left-block caps (C3–C10) sit at
+`connector_x + 7.75 mm` (the connector's long side, verified clear of its
+own courtyard with margin); right-block caps (C11–C18, except C11, see below)
+sit at `connector_x − 7.75 mm` (the short side, even safer than the 5.2 mm
+margin an earlier revision used). Mirror-checked directly: C3's position
+reflects exactly onto C14's. **C11 is the one exception** — at the mirror
+position (106.55 mm) its courtyard collides with R2's (R1–R3 are fixed,
+off-limits to move), confirmed both by courtyard-box math and a live DRC
+short/courtyard-overlap finding. C11 sits at 107.8 mm instead, 1.25 mm off true mirror, the minimum shift
+that clears R2 with margin.
+
+**The XIAO module has no schematic symbol and no PCB footprint at all.** Its
+real electrical connections are carried entirely by two standard 1×7,
+2.54 mm female sockets, HDR1 and HDR2 — one per physical pin column of the
+module's DIP-14 footprint (HDR1: GPIO0/GPIO1/PCF_INT/GPIO21/SDA/SCL/GPIO16;
+HDR2: GPIO17/GPIO19/GPIO20/GPIO18/+3V3/GND/VBUS), each with correctly-named
+pins in the schematic. HDR1/HDR2 are soldered flat onto this board; the
+module's own male pins (soldered into its DIP-14 holes by hand, off-board —
+not a part in this BOM) plug into the sockets, physically elevating the
+module above the board surface by the socket height so it clears U2 and C1
+underneath without touching them. This keeps every component on one side of
+the board, which JLCPCB only charges a single assembly fee for (a 2-sided
+assembly would double that fee for the sake of two parts). With no PCB
+footprint for the module at all, there's nothing for the `courtyards_overlap`
+DRC check to compare against U2/C1's courtyards in the first place.
+
+An earlier revision instead gave the module its own dedicated PCB footprint
+— zero pads, no courtyard, existing purely to hold the 3D model — while
+keeping its schematic symbol fully wired for documentation. That worked, but
+KiCad's schematic-parity check expects every schematic pin to find a
+correspondingly-numbered footprint pad, and a zero-pad footprint can never
+satisfy that: it produced a structural, permanent warning for all 14 pins
+("no pad found for pin N in schematic"), one that could only be silenced
+with a DRC exclusion, not actually resolved. Since 3D models are attached to
+footprints and never inspected by DRC/ERC at all, the cleaner fix was to drop
+that placeholder symbol/footprint entirely and instead give HDR1's own real,
+already-connected footprint a *second*, independent 3D model entry — the
+module's STEP file, positioned via its own offset/rotation so it renders in
+the same physical spot as before. No symbol means no parity check to fail;
+the module still renders correctly in the 3D viewer since a footprint (HDR1's)
+is still there to carry it. The final transform is offset (13.3125, −9.36,
+8.8 mm), rotation (−90°, 0°, −90°).
+
+**HDR1/HDR2's spacing was wrong for a while, and so was the transform above
+until it was corrected alongside it.** An earlier revision placed HDR1 and
+HDR2 16.4925 mm apart — the real, authoritative spacing (confirmed from
+Seeed's own official OPL KiCad library footprint,
+`Seeed Studio XIAO Series Library/XIAO-ESP32-C6-DIP.kicad_mod`, the same
+library this project's schematic uses) is 15.24 mm, centered on x = 93.15 mm.
+The footprint defines each pin twice — a real `thru_hole circle` pad and a
+cosmetic `smd roundrect` annular pad 0.835 mm further out — and the original
+extraction picked up the cosmetic pad for HDR2 and an incorrect average of
+both pads for HDR1, instead of the real through-holes alone. Corrected
+positions: HDR1 x = 100.77 (was 101.1875), HDR2 x = 85.53 (was 84.695), Y and
+rotation unchanged for both. The module's 3D-model offset above is the
+result *after* this correction — HDR1 moving −0.4175 mm required the same
+shift in the model's offset.x to keep the module's world-space position
+exactly where it had been visually confirmed correct. Re-verified with
+`get_board_2d_view` (not `kicad-cli pcb render` — the two don't visually
+agree closely enough for fine placement checks, confirmed directly): the
+module now sits flush against both header columns with no gap on either
+side. The one caveat on the model itself is unchanged: this second model is
+a board-instance-local addition, not part of HDR1's stock library footprint
+(`Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical`) — running
+"Update Footprint from Library" on HDR1 would silently drop it.
+
+Swapping the module's oversized, module-specific pads for HDR1/HDR2's small
+standard socket pads also freed real copper/routing room in what was the
+densest spot on the board — those oversized pads were a direct cause of
+several clearance fights during autorouting in earlier revisions.
+
+**Antenna clearance.** No keepout zone under the module's antenna end — with the
+antenna now at the board's physical edge (copper on one side only, not
+surrounding it) and the module elevated a few mm above the board surface on
+the headers, the RF justification for a precautionary carve-out is much
+weaker than when the module sat flush on the surface. Removed rather than
+carried forward as unnecessary caution.
 
 **Ground plane.** Both copper layers carry a full-board GND pour with a
 *solid* pad connection (no thermal-relief spokes) rather than KiCad's default
 thermal mode. The PCF8575's 0.65 mm pin pitch is too tight for the standard
 2-spoke thermal relief — it kept failing DRC's `starved_thermal` check — and
 solid fill also avoids the connectivity islands thermal relief can leave
-behind on a densely-routed 2-layer board. A few GND stitching vias tie the two
-layers together where no component pad already does.
+behind on a densely-routed 2-layer board. The pour outline sits 0.2 mm inside
+the board edge on all sides — JLCPCB's published minimum copper-to-routed-edge
+clearance — rather than the tighter, sub-minimum inset an earlier revision
+used. No dedicated GND stitching vias are needed — the 16 JST connectors'
+and both header sockets' through-hole pins already bridge F.Cu and B.Cu
+everywhere the dense signal routing would otherwise leave a pour region
+isolated; each fill fragment on both layers was checked directly against
+the via/pad list and every one lands on a real GND connection.
+
+One `unconnected_items` DRC finding is left and is a known, checked-benign
+zone-fill artifact, not a real gap: at the top-right corner (the rounded
+corner's zone-inset vertex, board edge minus the 3 mm corner radius) DRC
+reports `GND_top_solid` and `GND_bottom_solid` as unconnected. Direct
+polygon inspection shows both layers' fill share the exact same points at
+that vertex, and both zones tie into the same net through dozens of shared
+GND pads elsewhere on the board — a stitching via added right at the flagged
+point didn't change the finding (and cost real edge clearance), confirming
+it's a KiCad connectivity-check quirk specific to that corner geometry, not
+an electrical break. This has now shown up at the same relative corner
+across more than one revision of this outline.
 
 **Routing.** Autorouted with [Freerouting](https://github.com/freerouting/freerouting)
 via its MCP server, driven from a Specctra DSN exported through KiCad's own
 `pcbnew.ExportSpecctraDSN`/`ImportSpecctraSES` (the same mechanism as *File →
 Export/Import → Specctra*, just scripted). The GND pours export as Specctra
-`plane` records, so Freerouting treats GND as already satisfied by the plane
-and never draws an explicit GND trace or via for it — the 16 filter caps' GND
-legs, and everything else on the net, rely purely on the pour.
+`plane` records **as long as they exist at export time** — Freerouting then
+treats GND as already satisfied by the plane and never draws an explicit GND
+trace or via for it, so the 16 filter caps' GND legs, and everything else on
+the net, rely purely on the pour (see Ground Plane above). This is
+different from the antenna keepout (removed in this revision) and any other
+rule-area keepout zone, which Freerouting treats as a hard routing obstacle
+rather than just a copper-fill exclusion — a keepout can only exist once
+routing is done, while a GND *pour* zone should stay in place through export
+precisely so Freerouting reads it as a plane instead of routing GND as
+ordinary traces.
+A few of Freerouting's automatic-neckdown segments came back under the 0.2 mm
+fab minimum and were widened by hand after import; a couple of vias needed
+small nudges to clear adjacent copper. One or two connections per revision
+have consistently been too tightly boxed in for Freerouting to close on its
+own — U2's SW-net pins sit on a 0.65 mm pitch with GND/SDA/SCL fan-out
+immediately around them, and different specific connections have hit this
+depending on the exact routing pass (this revision: `SW11` between C13 and
+U2 pin 15, plus a trivial direct `+3V3` link between R1 and R2 that
+Freerouting simply missed). Each SW-net case was solved with a small
+grid-based pathfinder (clearance-aware, both copper layers, via cost
+included) rather than by guesswork, since the pocket is tight enough that
+hand-picked straight lines and even a first pathfinder pass (modeling only
+trace clearance, not the larger clearance a via itself needs) reliably
+landed on or too close to existing copper — the working version models via
+placement with its own, stricter clearance check before committing to a
+layer-switch point. Every change was re-verified with a fresh DRC pass.
 
-**3D models.** J1–J16 and U2 use the standard `.step` models bundled with
-their KiCad libraries. U1's OPL library footprint has no dedicated
-XIAO ESP32C6 model — only placeholder bodies for other XIAO variants, gated
-behind a `${AMZPATH}` environment variable this machine doesn't have
-configured — so `3dmodels/seeed-studio-xiao-esp32c6.step` (copied from the
-`water-tank-monitor` project's assets) is wired in directly via a
-`${KIPRJMOD}`-relative path instead.
+**3D models.** J1–J16, U2, HDR1 and HDR2 use the standard `.step` models
+bundled with their KiCad libraries. The OPL library's XIAO footprints have no
+dedicated XIAO ESP32C6 model — only placeholder bodies for other XIAO
+variants, gated behind a `${AMZPATH}` environment variable this machine
+doesn't have configured — so `3dmodels/seeed-studio-xiao-esp32c6.step`
+(copied from the `water-tank-monitor` project's assets) is used instead, via
+a `${KIPRJMOD}`-relative path, attached as HDR1's second 3D model entry (see
+Layout for why and the exact transform).
