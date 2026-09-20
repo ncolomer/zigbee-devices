@@ -13,6 +13,9 @@ node_modules/
 .claude/
 *.zip
 
+# Local MCP server config (machine-specific server paths/setup, not shared)
+.mcp.json
+
 # KiCad build artifacts / backups
 *.dsn
 *.ses
