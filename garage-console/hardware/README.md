@@ -44,6 +44,45 @@ purpose, so the board carries no LED of its own.
 | `3dmodels/` | Project-local STEP model(s) not available in any installed library |
 | `garage_console.pretty/` | Project-local footprint library — currently empty; kept registered in `fp-lib-table` rather than deregistered, see Layout |
 | `garage_console.kicad_sym` | Project-local symbol library — `XIAO_HDR_A`/`XIAO_HDR_B`, the named-pin schematic symbols behind HDR1/HDR2 |
+| `fab_export/` | Upload-ready production files, see Ordering |
+| `jlcpcb-cpl-corrections.json` | Placement corrections applied to the CPL, see Ordering |
+
+## Ordering
+
+The three files in `fab_export/` are tracked, so the board can be ordered from
+a clone without installing KiCad. On JLCPCB, upload:
+
+| File | Where |
+| --- | --- |
+| `garage-console-gerbers.zip` | PCB order (Gerber) |
+| `BOM-garage-console.csv` | Assembly → "BOM File" |
+| `CPL-garage-console.csv` | Assembly → "CPL File" |
+
+Economic PCBA, top side only, 2 layers. Economic supports through-hole, so the
+JST connectors and both pin sockets are machine-placed along with the SMD parts;
+nothing here needs hand-soldering. Everything on this board clears the Economic
+limits comfortably — the tightest is U1's 0.65 mm pin pitch against a 0.4 mm
+floor. Note the board is 21 mm wide, below Standard PCBA's 70 × 70 mm minimum,
+so Economic is the only tier it fits.
+
+To regenerate, pass the corrections file, or the placement corrections are lost:
+
+```
+export_manufacturing_package(
+  fab_house="jlcpcb",
+  jlcpcb_cpl_corrections_path=".../jlcpcb-cpl-corrections.json",
+  ...)
+```
+
+**Always check JLCPCB's Component Placements preview before paying.** KiCad and
+JLCPCB disagree about a package's zero-degree orientation, and Konnect's CPL
+writes the KiCad footprint *anchor* into the `Mid X`/`Mid Y` columns instead of
+the component midpoint ([Konnect #667](https://github.com/mixelpixx/Konnect/issues/667)),
+which displaces anything anchored on pin 1. `jlcpcb-cpl-corrections.json`
+compensates for both — rotations for the JSTs, U1 and the sockets, positions for
+the JSTs and sockets — with every value verified in that preview. U1 needs no
+position offset because the SSOP-24 anchor is already its centre. **Drop the
+position offsets if #667 is fixed**, or they will double-correct.
 
 Libraries: stock KiCad symbols/footprints, plus the two project-local
 libraries above (registered project-scope in `fp-lib-table`/`sym-lib-table`

@@ -23,9 +23,15 @@ node_modules/
 *-backups/
 .history/
 
-# KiCad fabrication/assembly exports (regenerate via Konnect export_manufacturing_package
-# and/or kicad-jlcpcb-tools; not source, don't track)
-**/hardware/fab_export/
+# KiCad fabrication/assembly exports. The working directory is regenerable, but the
+# three upload-ready files are tracked on purpose: with them, the boards can be ordered
+# straight from a clone (JLCPCB: zip -> PCB, BOM -> "BOM File", CPL -> "CPL File")
+# without installing KiCad. The loose gerbers/ directory stays out — it is just the
+# unzipped duplicate of the zip.
+**/hardware/fab_export/*
+!**/hardware/fab_export/BOM-*.csv
+!**/hardware/fab_export/CPL-*.csv
+!**/hardware/fab_export/*-gerbers.zip
 **/hardware/jlcpcb/
 
 # KiCad scratch/calibration project files (temporary test boards, not the real design)
