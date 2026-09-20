@@ -1,8 +1,0 @@
-Keeps this directory in the repo while the library is empty.
-
-garage_console.pretty is registered in fp-lib-table as ${KIPRJMOD}/garage_console.pretty.
-Git does not track empty directories, so without this file a fresh clone would leave
-KiCad pointing the garage_console nickname at a path that does not exist.
-
-KiCad only loads *.kicad_mod from a .pretty directory, so this file is ignored by the
-footprint library loader. Delete it once the library holds a real footprint.

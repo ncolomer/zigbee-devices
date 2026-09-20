@@ -42,7 +42,6 @@ purpose, so the board carries no LED of its own.
 | `garage-console.kicad_pcb` | Board layout |
 | `datasheets/` | Local copies of every datasheet the design relies on |
 | `3dmodels/` | Project-local STEP model(s) not available in any installed library |
-| `garage_console.pretty/` | Project-local footprint library — currently empty; kept registered in `fp-lib-table` rather than deregistered, see Layout |
 | `garage_console.kicad_sym` | Project-local symbol library — `XIAO_HDR_A`/`XIAO_HDR_B`, the named-pin schematic symbols behind HDR1/HDR2 |
 | `fab_export/` | Upload-ready production files, see Ordering |
 | `jlcpcb-cpl-corrections.json` | Placement corrections applied to the CPL, see Ordering |
@@ -84,14 +83,18 @@ the JSTs and sockets — with every value verified in that preview. U1 needs no
 position offset because the SSOP-24 anchor is already its centre. **Drop the
 position offsets if #667 is fixed**, or they will double-correct.
 
-Libraries: stock KiCad symbols/footprints, plus the two project-local
-libraries above (registered project-scope in `fp-lib-table`/`sym-lib-table`
-under the `garage_console` nickname). Nothing on the board comes from the
+Libraries: every footprint comes from a stock KiCad library, so `fp-lib-table`
+registers nothing project-scope and is empty. The only project-local library is
+`garage_console.kicad_sym`, registered in `sym-lib-table` under the
+`garage_console` nickname. Nothing on the board comes from the
 [Seeed OPL KiCad library](https://github.com/Seeed-Studio/OPL_Kicad_Library)
-any more — it was only ever needed for the XIAO module's footprint, which this design
-dropped (see Layout), so its entry was removed from `fp-lib-table` rather
-than left pointing at a machine-specific absolute path that wouldn't
-resolve on anyone else's clone.
+any more — it was only ever needed for the XIAO module's footprint, which this
+design dropped (see Layout), so its entry was removed rather than left pointing
+at a machine-specific absolute path that wouldn't resolve on anyone else's
+clone. An empty `garage_console.pretty/` was dropped for the same reason: git
+doesn't track empty directories, so registering one only guarantees a
+missing-library path on a fresh clone. Re-add both the directory and its
+`fp-lib-table` entry if a project-local footprint is ever needed.
 
 ## Switch channel map
 
