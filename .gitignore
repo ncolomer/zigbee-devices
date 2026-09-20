@@ -10,3 +10,32 @@ node_modules/
 
 # macOS
 .DS_Store
+.claude/
+*.zip
+
+# Local MCP server config (machine-specific server paths/setup, not shared)
+.mcp.json
+
+# KiCad build artifacts / backups
+*.dsn
+*.ses
+~*.lck
+*-backups/
+.history/
+
+# KiCad fabrication/assembly exports. The working directory is regenerable, but the
+# three upload-ready files are tracked on purpose: with them, the boards can be ordered
+# straight from a clone (JLCPCB: zip -> PCB, BOM -> "BOM File", CPL -> "CPL File")
+# without installing KiCad. The loose gerbers/ directory stays out — it is just the
+# unzipped duplicate of the zip.
+**/hardware/fab_export/*
+!**/hardware/fab_export/BOM-*.csv
+!**/hardware/fab_export/CPL-*.csv
+!**/hardware/fab_export/*-gerbers.zip
+**/hardware/jlcpcb/
+
+# KiCad scratch/calibration project files (temporary test boards, not the real design)
+**/hardware/*-calib.kicad_pro
+**/hardware/*-calib.kicad_prl
+**/hardware/*-test3d.kicad_pro
+**/hardware/*-test3d.kicad_prl
