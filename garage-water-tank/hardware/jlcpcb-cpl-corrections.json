@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "policy_id": "garage-water-tank-jlcpcb-v1",
+  "provenance": "Offsets are derived from footprint geometry and compensate Konnect issue #667: CPL Mid X/Mid Y carries the KiCad footprint ANCHOR rather than the component midpoint, so any footprint whose anchor is not centred lands off by the anchor-to-centre vector. 1x7 socket pin-1 anchor is +7.62mm local Y, which maps to opposite board-Y signs for HDR1 (180 deg) and HDR2 (0 deg); JST PH 1x04 pin-1 anchor is +3.0mm local X (pads at local x 0/2/4/6). J1, R1-R4 and C1 need no offset — their anchors are already their pad-bounding-box centres. SW1 is hand-soldered and excluded from the position file. The HDR1/HDR2 90 deg rotation is carried over from garage-console's policy, where the project owner verified this exact footprint (PinSocket_1x07_P2.54mm_Vertical) in JLCPCB Component Placements on 2026-09-20. NOT YET VERIFIED for this board: the rotation of J2 (JST PH, a different series from the XH that garage-console verified) and of J1 (custom low-profile socket) — check both in JLCPCB's placement preview before ordering and add component_overrides here if they render turned. REMOVE the offsets if Konnect starts exporting true midpoints.",
+  "footprint_rules": [
+    {
+      "id": "jst-ph-b4b-4p-vertical",
+      "footprint_prefix": "JST_PH_B4B-PH-K_1x04_P2.00mm_Vertical",
+      "offset_x_mm": 3.0,
+      "offset_y_mm": 0.0
+    }
+  ],
+  "component_overrides": [
+    {
+      "id": "hdr1-pin1-anchor-180deg",
+      "designator": "HDR1",
+      "rotation_degrees": 90,
+      "offset_x_mm": 0.0,
+      "offset_y_mm": 7.62
+    },
+    {
+      "id": "hdr2-pin1-anchor-0deg",
+      "designator": "HDR2",
+      "rotation_degrees": 90,
+      "offset_x_mm": 0.0,
+      "offset_y_mm": -7.62
+    }
+  ]
+}
