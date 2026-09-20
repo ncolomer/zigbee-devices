@@ -78,10 +78,6 @@
         [
           "copper_edge_clearance|140760000|95755000|62988e35-6c3b-4041-996a-500d3b5e9e52|c478f8e6-457c-4d11-a0a8-6ad9316ac5be",
           ""
-        ],
-        [
-          "silk_over_copper|130810000|64531900|26e9ad15-284c-4e04-8686-73266d7736bf|6373c5c1-9180-49b2-957b-1036f0d5487d",
-          ""
         ]
       ],
       "meta": {
@@ -623,7 +619,7 @@
       "plot": "gerber/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "Water Tank Monitor.step",
+      "step": "garage-water-tank.step",
       "svg": "",
       "vrml": ""
     },
@@ -635,7 +631,7 @@
       "method": 0,
       "sort_order": 0
     },
-    "bom_export_filename": "Water Tank Monitor.csv",
+    "bom_export_filename": "garage-water-tank.csv",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
       "field_delimiter": ",",
@@ -814,7 +810,7 @@
   "sheets": [
     [
       "eb228d47-c1ed-4d3c-9f71-ac2a507db69f",
-      "Water Tank Monitor"
+      "garage-water-tank"
     ]
   ],
   "text_variables": {},
