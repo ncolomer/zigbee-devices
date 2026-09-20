@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "policy_id": "garage-console-jlcpcb-v1",
-  "provenance": "Verified by the project owner in JLCPCB Component Placements on 2026-09-20. Rotations: JST XH rendered 180 deg off, PCF8575 (SSOP-24) 90 deg off, 1x7 pin sockets 90 deg off. Offsets compensate a Konnect export defect: CPL Mid X/Mid Y carries the KiCad footprint ANCHOR rather than the component midpoint, so any footprint whose anchor is not centred lands off by the anchor-to-centre vector (JST pin-1 anchor: +1.25mm local X; 1x7 socket pin-1 anchor: +7.62mm local Y, which maps to opposite board-Y signs for HDR1 at 180 deg and HDR2 at 0 deg). U1 needs no offset because the SSOP-24 anchor is already its centre. REMOVE these offsets if Konnect starts exporting true midpoints.",
+  "provenance": "Verified by the project owner in JLCPCB Component Placements on 2026-09-20. Rotations: JST XH rendered 180 deg off, 1x7 pin sockets 90 deg off. SSOP-24 is 270, not 90: at 90 the package pin-1 dimple and JLCPCB's pin-1 marker both rendered at the pad-13 corner, diagonally opposite the board's pin-1 silk triangle, i.e. a further 180 deg out; 270 also matches the correction kicad-jlcpcb-tools applies to this footprint. Offsets compensate a Konnect export defect: CPL Mid X/Mid Y carries the KiCad footprint ANCHOR rather than the component midpoint, so any footprint whose anchor is not centred lands off by the anchor-to-centre vector (JST pin-1 anchor: +1.25mm local X; 1x7 socket pin-1 anchor: +7.62mm local Y, which maps to opposite board-Y signs for HDR1 at 180 deg and HDR2 at 0 deg). U1 needs no offset because the SSOP-24 anchor is already its centre. REMOVE these offsets if Konnect starts exporting true midpoints.",
   "footprint_rules": [
     {
       "id": "jst-xh-b2b-2p-vertical",
@@ -13,7 +13,7 @@
     {
       "id": "ssop-24-5.3x8.2-p0.65",
       "footprint_prefix": "SSOP-24_5.3x8.2mm_P0.65mm",
-      "rotation_degrees": 90
+      "rotation_degrees": 270
     }
   ],
   "component_overrides": [
