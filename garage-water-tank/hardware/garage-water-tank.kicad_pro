@@ -534,7 +534,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "Water Tank Monitor.kicad_pro",
+    "filename": "garage-water-tank.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -803,8 +803,8 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "Water Tank Monitor.kicad_sch",
-        "name": "Water Tank Monitor",
+        "filename": "garage-water-tank.kicad_sch",
+        "name": "garage-water-tank",
         "uuid": "eb228d47-c1ed-4d3c-9f71-ac2a507db69f"
       }
     ],
