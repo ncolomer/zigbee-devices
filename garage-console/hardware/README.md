@@ -49,7 +49,7 @@ Libraries: stock KiCad symbols/footprints, plus the two project-local
 libraries above (registered project-scope in `fp-lib-table`/`sym-lib-table`
 under the `garage_console` nickname). Nothing on the board comes from the
 [Seeed OPL KiCad library](https://github.com/Seeed-Studio/OPL_Kicad_Library)
-any more — it was only ever needed for U1's footprint, which this design
+any more — it was only ever needed for the XIAO module's footprint, which this design
 dropped (see Layout), so its entry was removed from `fp-lib-table` rather
 than left pointing at a machine-specific absolute path that wouldn't
 resolve on anyone else's clone.
@@ -126,10 +126,10 @@ self-corrects.
 
 | Ref | Qty | Value | Footprint | LCSC | Notes |
 |---|---|---|---|---|---|
-| U2 | 1 | PCF8575 | SSOP-24 0.65 mm | [C2863388](https://www.lcsc.com/product-detail/C2863388.html) | TI PCF8575DBR |
+| U1 | 1 | PCF8575 | SSOP-24 0.65 mm | [C2863388](https://www.lcsc.com/product-detail/C2863388.html) | TI PCF8575DBR |
 | HDR1, HDR2 | 2 | Socket, 1×7, 2.54 mm | `PinSocket_1x07_P2.54mm_Vertical` | [C22438157](https://www.lcsc.com/product-detail/C22438157.html) | hanxia HX PM2.54-1x7P ZC-Y, female, 8.5 mm socket height; carry the XIAO module's real electrical connections, see Layout |
 | J1–J16 | 16 | JST XH 2-pin | B2B-XH-A vertical, 2.5 mm | [C158012](https://www.lcsc.com/product-detail/C158012.html) | cable side: XHP-2 housing + SXH-001T-P0.6 crimps |
-| C1 | 1 | 100 nF X7R | 0805 | [C49678](https://www.lcsc.com/product-detail/C49678.html) | U2 decoupling |
+| C1 | 1 | 100 nF X7R | 0805 | [C49678](https://www.lcsc.com/product-detail/C49678.html) | U1 decoupling |
 | C2 | 1 | 10 µF X5R | 0805 | [C15850](https://www.lcsc.com/product-detail/C15850.html) | +3V3 bulk, next to the module's supply pin (HDR2) |
 | C3–C18 | 16 | 100 nF X7R | 0805 | [C49678](https://www.lcsc.com/product-detail/C49678.html) | input filter, one per channel |
 | R1, R2 | 2 | 4.7 kΩ | 0805 | [C17673](https://www.lcsc.com/product-detail/C17673.html) | I²C pull-ups (the XIAO has none) |
@@ -145,7 +145,7 @@ plug into HDR1/HDR2's sockets, which is how the module is mounted.
 
 No mounting holes — this board lives inside an enclosure that doesn't need them.
 
-All passive LCSC numbers are JLCPCB Basic-library parts (no Extended-part assembly fee), picked for highest stock among matching value/footprint/tolerance. U2, J1–J16, and HDR1/HDR2 have no Basic-library equivalent — this specific I/O expander, the JST connectors, and 2.54 mm pin sockets aren't stocked there — so each lists the highest-stock Extended part matching the MPN already in the schematic.
+All passive LCSC numbers are JLCPCB Basic-library parts (no Extended-part assembly fee), picked for highest stock among matching value/footprint/tolerance. U1, J1–J16, and HDR1/HDR2 have no Basic-library equivalent — this specific I/O expander, the JST connectors, and 2.54 mm pin sockets aren't stocked there — so each lists the highest-stock Extended part matching the MPN already in the schematic.
 
 Every part above also carries its LCSC number as an `LCSC` field on the schematic symbol itself (not just this table), so it flows straight through KiCad's own BOM export and into `kicad-jlcpcb-tools`.
 
@@ -165,7 +165,7 @@ right edges are mirrored around the connector block's own centerline
 (x = 93.15 mm) rather than the board's raw geometric center, which an earlier
 revision's asymmetric width trim had drifted 0.75 mm away from. The 16 JST
 connectors form two rows of 8 (one row per board edge), split into two
-4-connector blocks per row with U2/HDR1/HDR2 sitting in the gap between the
+4-connector blocks per row with U1/HDR1/HDR2 sitting in the gap between the
 blocks, centered both horizontally and vertically. The module's ceramic
 antenna faces the top edge (right at the board edge — see antenna clearance
 note below), USB-C faces the bottom edge. Each filter cap (C3–C18) is rotated
@@ -194,12 +194,12 @@ HDR2: GPIO17/GPIO19/GPIO20/GPIO18/+3V3/GND/VBUS), each with correctly-named
 pins in the schematic. HDR1/HDR2 are soldered flat onto this board; the
 module's own male pins (soldered into its DIP-14 holes by hand, off-board —
 not a part in this BOM) plug into the sockets, physically elevating the
-module above the board surface by the socket height so it clears U2 and C1
+module above the board surface by the socket height so it clears U1 and C1
 underneath without touching them. This keeps every component on one side of
 the board, which JLCPCB only charges a single assembly fee for (a 2-sided
 assembly would double that fee for the sake of two parts). With no PCB
 footprint for the module at all, there's nothing for the `courtyards_overlap`
-DRC check to compare against U2/C1's courtyards in the first place.
+DRC check to compare against U1/C1's courtyards in the first place.
 
 An earlier revision instead gave the module its own dedicated PCB footprint
 — zero pads, no courtyard, existing purely to hold the 3D model — while
@@ -297,10 +297,10 @@ A few of Freerouting's automatic-neckdown segments came back under the 0.2 mm
 fab minimum and were widened by hand after import; a couple of vias needed
 small nudges to clear adjacent copper. One or two connections per revision
 have consistently been too tightly boxed in for Freerouting to close on its
-own — U2's SW-net pins sit on a 0.65 mm pitch with GND/SDA/SCL fan-out
+own — U1's SW-net pins sit on a 0.65 mm pitch with GND/SDA/SCL fan-out
 immediately around them, and different specific connections have hit this
 depending on the exact routing pass (this revision: `SW11` between C13 and
-U2 pin 15, plus a trivial direct `+3V3` link between R1 and R2 that
+U1 pin 15, plus a trivial direct `+3V3` link between R1 and R2 that
 Freerouting simply missed). Each SW-net case was solved with a small
 grid-based pathfinder (clearance-aware, both copper layers, via cost
 included) rather than by guesswork, since the pocket is tight enough that
@@ -310,7 +310,7 @@ landed on or too close to existing copper — the working version models via
 placement with its own, stricter clearance check before committing to a
 layer-switch point. Every change was re-verified with a fresh DRC pass.
 
-**3D models.** J1–J16, U2, HDR1 and HDR2 use the standard `.step` models
+**3D models.** J1–J16, U1, HDR1 and HDR2 use the standard `.step` models
 bundled with their KiCad libraries. The OPL library's XIAO footprints have no
 dedicated XIAO ESP32C6 model — only placeholder bodies for other XIAO
 variants, gated behind a `${AMZPATH}` environment variable this machine

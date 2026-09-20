@@ -1017,7 +1017,7 @@
 		(at 93.15 12)
 		(descr "SSOP, 24 Pin (JEDEC MO-150 variation AG, 1.75mm body thickness, https://www.jedec.org/document_search?search_api_views_fulltext=MO-150, https://ww1.microchip.com/downloads/en/PackagingSpec/00000049BQ.pdf#page=398, https://www.analog.com/media/en/package-pcb-resources/package/pkg_pdf/ltc-legacy-ssop/ssop_24_05-08-1640.pdf)")
 		(tags "SSOP SO")
-		(property "Reference" "U2"
+		(property "Reference" "U1"
 			(at 0 3.25 0)
 			(unlocked yes)
 			(layer "F.SilkS")
@@ -6900,7 +6900,7 @@
 				(pins "1" "2" "3" "4" "5" "6" "7")
 			)
 		)
-		(attr through_hole exclude_from_pos_files exclude_from_bom)
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.33 1.27)
@@ -8428,7 +8428,7 @@
 				(pins "1" "2" "3" "4" "5" "6" "7")
 			)
 		)
-		(attr through_hole exclude_from_pos_files exclude_from_bom)
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.33 1.27)

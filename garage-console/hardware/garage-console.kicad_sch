@@ -3368,7 +3368,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "82c9a246-83ed-45b1-9f12-e4f5b093fb06")
-		(property "Reference" "U2"
+		(property "Reference" "U1"
 			(at 173.99 105.41 0)
 			(effects
 				(font
@@ -3414,7 +3414,7 @@
 		(instances
 			(project "garage-console"
 				(path "931ac6af-e45c-4c9e-b8b9-f003eb1d1d30"
-					(reference "U2")
+					(reference "U1")
 					(unit 1)
 				)
 			)
@@ -5784,7 +5784,7 @@
 		(lib_id "garage_console:XIAO_HDR_A")
 		(at 76.2 139.7 0)
 		(unit 1)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "47b22d40-e735-493b-8bc6-1f1014097e79")
@@ -5853,7 +5853,7 @@
 		(lib_id "garage_console:XIAO_HDR_B")
 		(at 76.2 180.34 0)
 		(unit 1)
-		(in_bom no)
+		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "02b51005-680e-4f18-9068-72c0966eaaa2")
