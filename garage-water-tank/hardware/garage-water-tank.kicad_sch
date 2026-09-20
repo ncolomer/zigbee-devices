@@ -5617,7 +5617,16 @@
 				)
 			)
 		)
-	)
+	
+		(property "LCSC" "C49678"
+			(at 180.34 130.81 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		))
 	(symbol
 		(lib_id "Device:R_Small")
 		(at 180.34 138.43 90)
@@ -5696,7 +5705,16 @@
 				)
 			)
 		)
-	)
+	
+		(property "LCSC" "C17408"
+			(at 180.34 138.43 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		))
 	(symbol
 		(lib_id "Device:R_Small")
 		(at 180.34 135.89 90)
@@ -5775,7 +5793,16 @@
 				)
 			)
 		)
-	)
+	
+		(property "LCSC" "C17408"
+			(at 180.34 135.89 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		))
 	(symbol
 		(lib_id "Device:R")
 		(at 175.26 93.98 0)
@@ -5857,7 +5884,16 @@
 				)
 			)
 		)
-	)
+	
+		(property "LCSC" "C17673"
+			(at 175.26 93.98 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		))
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x04")
 		(at 193.04 133.35 0)
@@ -5966,7 +6002,7 @@
 				)
 			)
 		)
-		(property "MPN" "B4B-XH-A"
+		(property "MPN" "B4B-PH-K-S(LF)(SN)"
 			(at 193.04 133.35 0)
 			(hide yes)
 			(show_name no)
@@ -5988,7 +6024,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C144395"
+		(property "LCSC" "C131334"
 			(at 193.04 127.635 0)
 			(hide yes)
 			(show_name no)
@@ -6102,7 +6138,16 @@
 				)
 			)
 		)
-	)
+	
+		(property "LCSC" "C17673"
+			(at 171.45 93.98 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		))
 	(symbol
 		(lib_id "power:VCC")
 		(at 171.45 85.09 0)
@@ -6355,7 +6400,7 @@
 				)
 			)
 		)
-		(property "MPN" "https://www.aliexpress.com/item/1005006410708666.html"
+		(property "MPN" "HX PM2.54-1x4P TP-YQ"
 			(at 181.61 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -6366,7 +6411,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" ""
+		(property "Manufacturer" "hanxia"
 			(at 181.61 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -6399,7 +6444,16 @@
 				)
 			)
 		)
-	)
+	
+		(property "LCSC" "C42379197"
+			(at 181.61 104.14 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		))
 	(symbol
 		(lib_id "garage_water_tank:XIAO_HDR_A")
 		(at 104.14 106.68 0)
@@ -6459,7 +6513,16 @@
 				)
 			)
 		)
-	)
+	
+		(property "LCSC" "C22438157"
+			(at 104.14 106.68 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		))
 	(symbol
 		(lib_id "garage_water_tank:XIAO_HDR_B")
 		(at 101.6 130.81 0)
@@ -6519,7 +6582,16 @@
 				)
 			)
 		)
-	)
+	
+		(property "LCSC" "C22438157"
+			(at 101.6 130.81 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		))
 	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 166.37 85.09 0)

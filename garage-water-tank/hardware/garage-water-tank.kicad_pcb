@@ -183,6 +183,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C22438157"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "e3d99695-d1a4-4c88-a768-eb0af424f590")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(path "/8003d3f6-11a7-4f9d-b349-f4d31000ebd1")
 		(sheetname "/")
 		(sheetfile "garage-water-tank.kicad_sch")
@@ -471,6 +482,17 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ab6c1f3a-70b3-42c1-9b87-ad7b71873bf6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C22438157"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "d6214365-47c3-435f-8dae-a6eed9226b1a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -780,6 +802,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C17673"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "db16bf23-2fae-4b2c-ae58-7d86e9d98e32")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/60d403b1-40c7-4b8f-95d5-5c51730f8226")
 		(sheetname "/")
@@ -978,7 +1011,7 @@
 				)
 			)
 		)
-		(property "MPN" "B4B-XH-A"
+		(property "MPN" "B4B-PH-K-S(LF)(SN)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1004,7 +1037,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C144395"
+		(property "LCSC" "C131334"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1491,6 +1524,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C17673"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "63ee887d-4557-4939-bd87-fb9064f1bc8f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/6827465a-a7bb-4fea-8c0f-512fcec89bf3")
 		(sheetname "/")
@@ -1681,7 +1725,7 @@
 				)
 			)
 		)
-		(property "MPN" "https://www.aliexpress.com/item/1005006410708666.html"
+		(property "MPN" "HX PM2.54-1x4P TP-YQ"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1694,7 +1738,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" ""
+		(property "Manufacturer" "hanxia"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1704,6 +1748,17 @@
 				(font
 					(size 1 1)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C42379197"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "66bbccc7-c048-43bd-b243-c40ff521d2b9")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
@@ -2184,6 +2239,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C17408"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "37c6930e-8e03-4593-81e5-d095abaab444")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/11b0b678-f3e2-4ea8-ba44-ab53b2a9492d")
 		(sheetname "/")
@@ -2483,6 +2549,17 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "99fbc89c-5f54-4f3d-ad85-463a795bfbf8")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C17408"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "ac50fb6d-8293-48f7-9712-4e9ecdefef67")
 			(effects
 				(font
 					(size 1.27 1.27)
