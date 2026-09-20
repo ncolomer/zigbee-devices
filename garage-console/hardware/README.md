@@ -14,10 +14,11 @@ this board is permanently powered from the XIAO's USB-C.
 ## Design decisions
 
 **PCF8575 rather than MCP23017.** The MCP23017 was the first choice, but its
-GPA7 and GPB7 pins are output-only ([datasheet DS20001952D](datasheets/MCP23017-DS20001952.pdf),
+GPA7 and GPB7 pins are output-only ([datasheet DS20001952D](https://ww1.microchip.com/downloads/en/DeviceDoc/20001952C.pdf),
 pin table p.11), leaving only 14 usable inputs for 16 switches. The PCF8575 has
 16 true quasi-bidirectional I/Os plus an open-drain interrupt output, so all 16
-channels stay uniform. The MCP23017 datasheet is kept here as the record of why.
+channels stay uniform. No local copy of the MCP23017 datasheet is kept — it's
+a rejected alternative, not a part this design uses.
 
 **No external pull-ups on the inputs.** The PCF8575 sources IOH = 30–300 µA to
 VCC on any pin written high, which is the input configuration ([PCF8575 SCPS121I](datasheets/PCF8575-TI-datasheet.pdf)
@@ -44,11 +45,14 @@ purpose, so the board carries no LED of its own.
 | `garage_console.pretty/` | Project-local footprint library — currently empty; kept registered in `fp-lib-table` rather than deregistered, see Layout |
 | `garage_console.kicad_sym` | Project-local symbol library — `XIAO_HDR_A`/`XIAO_HDR_B`, the named-pin schematic symbols behind HDR1/HDR2 |
 
-Libraries: stock KiCad symbols/footprints, plus `Seeed_Studio_XIAO_Series` from
-the [Seeed OPL KiCad library](https://github.com/Seeed-Studio/OPL_Kicad_Library)
-(registered project-scope in `fp-lib-table`), and the two project-local
+Libraries: stock KiCad symbols/footprints, plus the two project-local
 libraries above (registered project-scope in `fp-lib-table`/`sym-lib-table`
-under the `garage_console` nickname).
+under the `garage_console` nickname). Nothing on the board comes from the
+[Seeed OPL KiCad library](https://github.com/Seeed-Studio/OPL_Kicad_Library)
+any more — it was only ever needed for U1's footprint, which this design
+dropped (see Layout), so its entry was removed from `fp-lib-table` rather
+than left pointing at a machine-specific absolute path that wouldn't
+resolve on anyone else's clone.
 
 ## Switch channel map
 
@@ -175,14 +179,12 @@ only 2.975 mm to its left — an asymmetry baked into the footprint itself that
 doesn't flip between blocks, so a true mirror needs an *asymmetric* offset
 magnitude, not just an opposite sign. Left-block caps (C3–C10) sit at
 `connector_x + 7.75 mm` (the connector's long side, verified clear of its
-own courtyard with margin); right-block caps (C11–C18, except C11, see below)
-sit at `connector_x − 7.75 mm` (the short side, even safer than the 5.2 mm
-margin an earlier revision used). Mirror-checked directly: C3's position
-reflects exactly onto C14's. **C11 is the one exception** — at the mirror
-position (106.55 mm) its courtyard collides with R2's (R1–R3 are fixed,
-off-limits to move), confirmed both by courtyard-box math and a live DRC
-short/courtyard-overlap finding. C11 sits at 107.8 mm instead, 1.25 mm off true mirror, the minimum shift
-that clears R2 with margin.
+own courtyard with margin); most right-block caps (C12–C14, C16–C18) sit at
+`connector_x − 5.3 mm` — the connector's short side, which needs less
+clearance than the long side does. **C11 and C15 are the two exceptions**:
+both sit at `connector_x + 7.805 mm`, on the same side as the left-block
+caps rather than mirrored, because the mirrored position would put them
+inside the R1–R3 group's courtyards (R1–R3 are fixed, off-limits to move).
 
 **The XIAO module has no schematic symbol and no PCB footprint at all.** Its
 real electrical connections are carried entirely by two standard 1×7,
@@ -213,7 +215,7 @@ already-connected footprint a *second*, independent 3D model entry — the
 module's STEP file, positioned via its own offset/rotation so it renders in
 the same physical spot as before. No symbol means no parity check to fail;
 the module still renders correctly in the 3D viewer since a footprint (HDR1's)
-is still there to carry it. The final transform is offset (13.3125, −9.36,
+is still there to carry it. The final transform is offset (13.73, −9.36,
 8.8 mm), rotation (−90°, 0°, −90°).
 
 **HDR1/HDR2's spacing was wrong for a while, and so was the transform above
