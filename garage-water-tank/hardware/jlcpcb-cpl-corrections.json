@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "policy_id": "garage-water-tank-jlcpcb-v1",
-  "provenance": "Offsets are derived from footprint geometry and compensate Konnect issue #667: CPL Mid X/Mid Y carries the KiCad footprint ANCHOR rather than the component midpoint, so any footprint whose anchor is not centred lands off by the anchor-to-centre vector. 1x7 socket pin-1 anchor is +7.62mm local Y, which maps to opposite board-Y signs for HDR1 (180 deg) and HDR2 (0 deg); JST PH 1x04 pin-1 anchor is +3.0mm local X (pads at local x 0/2/4/6). J1, R1-R4 and C1 need no offset — their anchors are already their pad-bounding-box centres. SW1 is hand-soldered and excluded from the position file. The HDR1/HDR2 90 deg rotation is carried over from garage-console's policy, where the project owner verified this exact footprint (PinSocket_1x07_P2.54mm_Vertical) in JLCPCB Component Placements on 2026-09-20. NOT YET VERIFIED for this board: the rotation of J2 (JST PH, a different series from the XH that garage-console verified) and of J1 (custom low-profile socket) — check both in JLCPCB's placement preview before ordering and add component_overrides here if they render turned. REMOVE the offsets if Konnect starts exporting true midpoints.",
+  "policy_id": "garage-water-tank-jlcpcb-v2",
+  "provenance": "Offsets compensate Konnect issue #667: CPL Mid X/Mid Y carries the KiCad footprint ANCHOR rather than the component midpoint, so any footprint whose anchor is not centred lands off by the anchor-to-centre vector. IMPORTANT: these offsets are applied in BOARD axes (x_after = x + offset_x, y_after = y - offset_y), so a footprint-local anchor-to-centre vector must be rotated by the placement angle before being written here. Values below are the measured board-space anchor-to-pad-bbox-centre vectors: HDR1 (180 deg) +7.62, HDR2 (0 deg) -7.62, J2 (90 deg) +3.0 on Y — J2's vector is +3.0mm in footprint-local X, which its 90 deg placement maps onto board Y. J1, R1-R4 and C1 need no offset; their anchors already sit at their pad-bbox centres. SW1 is hand-soldered and excluded from the position file. Verified by the project owner in JLCPCB Component Placements on 2026-09-21: HDR1/HDR2 render correctly at +90 (carried over from garage-console, same footprint); J2 rendered displaced along +X, which identified the axis error corrected in v2; J1 rendered turned 90 deg from its pad row, corrected here with +270 so the CPL reads 0 deg. RE-CHECK THE PREVIEW after this revision: if J1 now sits along the right axis but with pin 1 at the wrong end, change its rotation_degrees from 270 to 90 (CPL 180 deg). REMOVE the offsets if Konnect starts exporting true midpoints.",
   "footprint_rules": [
     {
       "id": "jst-ph-b4b-4p-vertical",
       "footprint_prefix": "JST_PH_B4B-PH-K_1x04_P2.00mm_Vertical",
-      "offset_x_mm": 3.0,
-      "offset_y_mm": 0.0
+      "offset_x_mm": 0.0,
+      "offset_y_mm": 3.0
     }
   ],
   "component_overrides": [
@@ -24,6 +24,13 @@
       "rotation_degrees": 90,
       "offset_x_mm": 0.0,
       "offset_y_mm": -7.62
+    },
+    {
+      "id": "j1-smd-staggered-socket-90deg",
+      "designator": "J1",
+      "rotation_degrees": 270,
+      "offset_x_mm": 0.0,
+      "offset_y_mm": 0.0
     }
   ]
 }
