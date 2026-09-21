@@ -3286,7 +3286,7 @@
 		(uuid "92d9e1f6-8fbd-4fb4-a13c-1762aad2da15")
 	)
 	(gr_text "garage-\nwater-tank\nv02"
-		(at 134 89.5 0)
+		(at 137.25 87 0)
 		(layer "F.SilkS")
 		(uuid "deffbf6f-527a-4037-ba1f-d073641c6ad6")
 		(effects
