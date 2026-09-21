@@ -126,8 +126,22 @@
 
 (rule "Clearance: pad/via to pad/via"
 	(layer outer)
-#	(condition "(A.Type == 'Pad' || A.Type == 'Via') && (B.Type == 'Pad' || B.Type == 'Via') && A.Net != B.Net")	
+#	(condition "(A.Type == 'Pad' || A.Type == 'Via') && (B.Type == 'Pad' || B.Type == 'Via') && A.Net != B.Net")
 	(condition "A.isPlated() && B.isPlated() && A.Net != B.Net")
 	(constraint clearance (min 0.127mm))
+)
+
+# J1 is an SMD socket whose contacts solder to staggered surface pads while the
+# OLED module's male legs pass straight through the board, so the height can be
+# set when mounting to the case. The four NPTH holes are leg clearance, drilled
+# on the pin axis; each sits 0.1mm from the pad of the very net its own leg
+# carries, and 1.935mm from any other net. Breaking out into that pad therefore
+# cannot short anything -- the exposure is mechanical (pad lifting), not
+# electrical, which is why this is relaxed rather than redesigned.
+# It cannot be designed out: 1.0mm is already near the 0.9mm diagonal of a
+# 0.64mm square pin, and the pads must land on the connector's fixed tabs.
+(rule "J1 pass-through leg holes, same-net clearance"
+	(condition "A.Reference == 'J1' && B.Reference == 'J1'")
+	(constraint hole_clearance (min 0.1mm))
 )
 

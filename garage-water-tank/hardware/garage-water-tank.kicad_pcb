@@ -191,6 +191,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -496,6 +497,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -810,6 +812,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -1532,6 +1535,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -1759,6 +1763,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -1863,50 +1868,6 @@
 			)
 			(layer "F.SilkS")
 			(uuid "447b7943-aa3a-43bf-a112-b9257ef76f76")
-		)
-		(fp_circle
-			(center 0 -3.81)
-			(end 0.5 -3.81)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill no)
-			(layer "Edge.Cuts")
-			(uuid "7b970478-1e4a-48b6-b01a-35348027ca5e")
-		)
-		(fp_circle
-			(center 0 -1.27)
-			(end 0.5 -1.27)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill no)
-			(layer "Edge.Cuts")
-			(uuid "5480471a-80a9-4087-b1bb-5820a43bc37e")
-		)
-		(fp_circle
-			(center 0 1.27)
-			(end 0.5 1.27)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill no)
-			(layer "Edge.Cuts")
-			(uuid "d974e677-146d-4d20-ba87-97bbf3244250")
-		)
-		(fp_circle
-			(center 0 3.81)
-			(end 0.5 3.81)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill no)
-			(layer "Edge.Cuts")
-			(uuid "e052f2ec-907f-4c92-b5dc-ba51e6db24cb")
 		)
 		(fp_line
 			(start 2.6 -5.7)
@@ -2129,6 +2090,34 @@
 				)
 			)
 		)
+		(pad "" np_thru_hole circle
+			(at 0 -3.81)
+			(size 1 1)
+			(drill 1)
+			(layers "*.Cu" "*.Mask")
+			(uuid "b3df8180-036b-40a3-80d9-7ef9ad29c093")
+		)
+		(pad "" np_thru_hole circle
+			(at 0 -1.27)
+			(size 1 1)
+			(drill 1)
+			(layers "*.Cu" "*.Mask")
+			(uuid "a88cac37-7e57-4aa0-ae4d-f694195bcb8a")
+		)
+		(pad "" np_thru_hole circle
+			(at 0 1.27)
+			(size 1 1)
+			(drill 1)
+			(layers "*.Cu" "*.Mask")
+			(uuid "42519245-2a76-42d6-a051-cdbfd6a077fd")
+		)
+		(pad "" np_thru_hole circle
+			(at 0 3.81)
+			(size 1 1)
+			(drill 1)
+			(layers "*.Cu" "*.Mask")
+			(uuid "5429ea56-6a41-4148-b173-5c26003b52ac")
+		)
 		(pad "1" smd rect
 			(at -1.49 -3.81 90)
 			(size 1.78 1.02)
@@ -2247,6 +2236,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -2563,6 +2553,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
