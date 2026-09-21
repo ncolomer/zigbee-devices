@@ -3013,6 +3013,58 @@
 		)
 	)
 	(gr_line
+		(start 135.196 79.2325)
+		(end 135.196 78.2225)
+		(stroke
+			(width 0.127)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "93c62a15-6ad9-4937-bd46-42dbfb81c028")
+	)
+	(gr_arc
+		(start 135.696 79.7325)
+		(mid 135.342447 79.586053)
+		(end 135.196 79.2325)
+		(stroke
+			(width 0.127)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "0d3a3e0d-2304-4e51-9364-1dff6f4bc8fe")
+	)
+	(gr_line
+		(start 143.6913 79.7325)
+		(end 135.696 79.7325)
+		(stroke
+			(width 0.127)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "8aeee80b-1b90-494f-9e64-d538b11a514a")
+	)
+	(gr_arc
+		(start 144.1913 79.2328)
+		(mid 144.044747 79.58616)
+		(end 143.6913 79.7325)
+		(stroke
+			(width 0.127)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "bd7f4a27-6c6e-4801-9e39-21540417e8d3")
+	)
+	(gr_line
+		(start 144.195 78.2225)
+		(end 144.1913 79.2328)
+		(stroke
+			(width 0.127)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "a90ea8d3-286d-4439-b90e-ea8d4ed73076")
+	)
+	(gr_line
 		(start 120 56.5)
 		(end 120 68.45)
 		(stroke
@@ -3284,6 +3336,17 @@
 		)
 		(layer "Edge.Cuts")
 		(uuid "92d9e1f6-8fbd-4fb4-a13c-1762aad2da15")
+	)
+	(gr_text "USB"
+		(at 139.7 81.3 0)
+		(layer "F.SilkS")
+		(uuid "61c49cc3-c959-4c8e-b3d5-6e1c63eeb026")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
 	)
 	(gr_text "garage-\nwater-tank\nv02"
 		(at 137.25 87 0)
