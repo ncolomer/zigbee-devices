@@ -1,0 +1,8 @@
+"Designator","Comment","Footprint","LCSC Part #"
+"C1,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12,C13,C14,C15,C16,C17,C18","100nF","Capacitor_SMD:C_0805_2012Metric","C49678"
+"C2","10uF","Capacitor_SMD:C_0805_2012Metric","C15850"
+"HDR1,HDR2","Header_1x7_2.54mm","Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical","C22438157"
+"J1,J2,J3,J4,J5,J6,J7,J8,J9,J10,J11,J12,J13,J14,J15,J16","XH-2P","Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical","C158012"
+"R1,R2","4.7k","Resistor_SMD:R_0805_2012Metric","C17673"
+"R3","10k","Resistor_SMD:R_0805_2012Metric","C17414"
+"U1","PCF8575","Package_SO:SSOP-24_5.3x8.2mm_P0.65mm","C2863388"
