@@ -12,6 +12,10 @@ node_modules/
 .DS_Store
 *.zip
 
+# Claude
+.claude/
+.mcp.json
+
 # KiCad build artifacts / backups
 *.dsn
 *.ses
@@ -27,3 +31,6 @@ node_modules/
 # and/or kicad-jlcpcb-tools; not source, don't track)
 **/hardware/fab_export/
 **/hardware/jlcpcb/
+
+# Local scratch notes
+TODOS.md
