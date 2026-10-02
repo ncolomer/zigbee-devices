@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+
+  (lib (name "garage-water-tank") (type "KiCad") (uri "${KIPRJMOD}/garage-water-tank.pretty") (options "") (descr "")))

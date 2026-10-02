@@ -23,6 +23,10 @@ node_modules/
 *-backups/
 .history/
 
+# KiCad per-user editor state (zoom, grid, visible layers, panel column widths).
+# Rewritten on every session and machine-specific; nothing here affects the board.
+*.kicad_prl
+
 # KiCad fabrication/assembly exports. The working directory is regenerable, but the
 # three upload-ready files are tracked on purpose: with them, the boards can be ordered
 # straight from a clone (JLCPCB: zip -> PCB, BOM -> "BOM File", CPL -> "CPL File")
@@ -39,3 +43,6 @@ node_modules/
 **/hardware/*-calib.kicad_prl
 **/hardware/*-test3d.kicad_pro
 **/hardware/*-test3d.kicad_prl
+
+# Local scratch notes
+TODOS.md
