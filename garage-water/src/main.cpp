@@ -8,6 +8,7 @@
 #include "StatusLed.h"
 #include "Debug.h"
 #include <Preferences.h>
+#include "driver/gpio.h"
 
 /* Zigbee configuration */
 #define ZIGBEE_MANUFACTURER     "DIY"
@@ -30,7 +31,7 @@
 #define DEFAULT_RELAY_STATE        true      // tank by default (fail-safe on a fresh device)
 #define DEFAULT_LITERS_PER_PULSE   10        // per meter, calibratable over Zigbee
 #define SAVE_READING_THRESHOLD_L   1000u     // persist a meter reading every 1 m³
-#define PULSE_DEBOUNCE_US          10000u    // 10 ms, matches the ptvo counters
+#define PULSE_DEBOUNCE_US          50000u    // line must be quiet this long before a falling edge counts
 #define FACTORY_RESET_TIME_MS      3000      // hold BOOT this long to factory-reset
 
 StatusLed statusLed(LED_PIN);
@@ -58,19 +59,17 @@ Meter meters[2] = {
   { &zbMeter2, METER2_PIN, "m2_reading", "m2_lpp", 0, 0, 0, 0, 0, 0 },
 };
 
-void IRAM_ATTR onMeter1Pulse() {
+// Every edge restarts the debounce window, so a chattering line (contact resting at its
+// switching point) is never counted; only a falling edge after a quiet period is a pulse.
+void IRAM_ATTR onMeterEdge(Meter &m) {
   uint32_t now = micros();
-  if (now - meters[0].last_us < PULSE_DEBOUNCE_US) return;
-  meters[0].last_us = now;
-  meters[0].pulses = meters[0].pulses + 1;
+  bool quiet = now - m.last_us >= PULSE_DEBOUNCE_US;
+  m.last_us = now;
+  if (quiet && gpio_get_level((gpio_num_t)m.pin) == 0) m.pulses = m.pulses + 1;
 }
 
-void IRAM_ATTR onMeter2Pulse() {
-  uint32_t now = micros();
-  if (now - meters[1].last_us < PULSE_DEBOUNCE_US) return;
-  meters[1].last_us = now;
-  meters[1].pulses = meters[1].pulses + 1;
-}
+void IRAM_ATTR onMeter1Edge() { onMeterEdge(meters[0]); }
+void IRAM_ATTR onMeter2Edge() { onMeterEdge(meters[1]); }
 
 bool loadRelayState() {
   nvs.begin("garage-water", false);
@@ -186,8 +185,8 @@ void setupMeters() {
     DEBUG_PRINTLN("Meter %d: reading=%u L, l/pulse=%u", idx + 1, m.liters, m.liters_per_pulse);
   }
 
-  attachInterrupt(digitalPinToInterrupt(METER1_PIN), onMeter1Pulse, FALLING);
-  attachInterrupt(digitalPinToInterrupt(METER2_PIN), onMeter2Pulse, FALLING);
+  attachInterrupt(digitalPinToInterrupt(METER1_PIN), onMeter1Edge, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(METER2_PIN), onMeter2Edge, CHANGE);
 }
 
 void checkFactoryReset() {
