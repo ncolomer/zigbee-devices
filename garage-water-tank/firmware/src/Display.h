@@ -28,6 +28,7 @@ private:
   SemaphoreHandle_t _mutex;
   TaskHandle_t _task;
   volatile bool _pairing;
+  bool _present;
 
   static void taskFunction(void *parameter);
   void runTask();

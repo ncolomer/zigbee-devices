@@ -18,29 +18,36 @@ static const uint8_t WIFI_ICON[] PROGMEM = {
 };
 
 Display::Display()
-  : _oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1), _mutex(NULL), _task(NULL), _pairing(false) {}
+  : _oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1), _mutex(NULL), _task(NULL), _pairing(false), _present(false) {}
 
 bool Display::begin() {
   _mutex = xSemaphoreCreateMutex();
+  xTaskCreate(taskFunction, "pairing_screen", 3072, this, 1, &_task);
+
+  // Adafruit's begin() doesn't check for an ACK, so probe first and run headless if absent
   Wire.begin();
+  Wire.beginTransmission(SCREEN_ADDRESS);
+  if (Wire.endTransmission() != 0) return false;
   if (!_oled.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) return false;
+  _present = true;
   _oled.setRotation(1); // portrait: 32 wide x 128 tall
   _oled.dim(true);
   _oled.setTextSize(1);
   _oled.setTextColor(SSD1306_INVERSE);
   _oled.clearDisplay(); // the library starts with its splash logo in the buffer
   _oled.display();
-  xTaskCreate(taskFunction, "pairing_screen", 3072, this, 1, &_task);
   return true;
 }
 
 void Display::setOn(bool on) {
+  if (!_present) return;
   xSemaphoreTake(_mutex, portMAX_DELAY);
   _oled.ssd1306_command(on ? SSD1306_DISPLAYON : SSD1306_DISPLAYOFF);
   xSemaphoreGive(_mutex);
 }
 
 void Display::showUnknown() {
+  if (!_present) return;
   xSemaphoreTake(_mutex, portMAX_DELAY);
   if (_pairing) {
     xSemaphoreGive(_mutex);
@@ -55,6 +62,7 @@ void Display::showUnknown() {
 }
 
 void Display::showLevel(float pct, float markPct) {
+  if (!_present) return;
   xSemaphoreTake(_mutex, portMAX_DELAY);
   if (_pairing) {
     xSemaphoreGive(_mutex);
@@ -110,7 +118,7 @@ void Display::runTask() {
     bool showIcon = false;
     while (_pairing) {
       xSemaphoreTake(_mutex, portMAX_DELAY);
-      if (_pairing) {
+      if (_pairing && _present) {
         _oled.clearDisplay();
         if (showIcon) {
           _oled.drawBitmap((_oled.width() - WIFI_ICON_SIZE) / 2, (_oled.height() - WIFI_ICON_SIZE) / 2 - 2,

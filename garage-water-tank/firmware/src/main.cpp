@@ -131,16 +131,15 @@ void wakeDisplay() {
 }
 
 void publish() {
+  if (!joined) return;  // attributes only exist once the stack has registered the endpoints
   if (differs(levelPct, sentLevel)) {
     bool nanChanged = isnan(levelPct) != isnan(sentLevel);
-    zbLevel.setAnalogInput(levelPct);
-    if (nanChanged) zbLevel.reportAnalogInput();
+      if (nanChanged) zbLevel.reportAnalogInput();
     sentLevel = levelPct;
   }
   if (differs(distanceCm, sentDistance)) {
     bool nanChanged = isnan(distanceCm) != isnan(sentDistance);
-    zbDistance.setAnalogInput(distanceCm);
-    if (nanChanged) zbDistance.reportAnalogInput();
+      if (nanChanged) zbDistance.reportAnalogInput();
     sentDistance = distanceCm;
   }
 }
@@ -176,6 +175,7 @@ void handleEvent(const Event &e) {
       recompute();
       break;
     case EventType::MinChanged:
+      if (!differs(e.value, minCm)) break;  // echo of our own setAnalogOutput()
       minCm = e.value;
       saveFloat("min_cm", minCm);
       DEBUG_PRINTLN("min distance set to %.1f cm", minCm);
@@ -183,6 +183,7 @@ void handleEvent(const Event &e) {
       recompute();
       break;
     case EventType::MaxChanged:
+      if (!differs(e.value, maxCm)) break;
       maxCm = e.value;
       saveFloat("max_cm", maxCm);
       DEBUG_PRINTLN("max distance set to %.1f cm", maxCm);
@@ -224,14 +225,12 @@ void setupZigbee() {
   zbMinDistance.setAnalogOutputResolution(0.1);
   zbMinDistance.setAnalogOutputMinMax(3, 600);
   zbMinDistance.onAnalogOutputChange(onMinChange);
-  zbMinDistance.setAnalogOutput(minCm);
 
   zbMaxDistance.addAnalogOutput();
   zbMaxDistance.setAnalogOutputDescription("Max distance, tank empty (cm)");
   zbMaxDistance.setAnalogOutputResolution(0.1);
   zbMaxDistance.setAnalogOutputMinMax(3, 600);
   zbMaxDistance.onAnalogOutputChange(onMaxChange);
-  zbMaxDistance.setAnalogOutput(maxCm);
 
   Zigbee.addEndpoint(&zbLevel);
   Zigbee.addEndpoint(&zbDistance);
@@ -259,6 +258,14 @@ void checkJoined() {
   joined = true;
   display.stopPairing();
   wakeDisplay();
+
+  // The stack only accepts attribute writes once running, so initial values go out here
+  zbMinDistance.setAnalogOutput(minCm);
+  zbMaxDistance.setAnalogOutput(maxCm);
+  zbLevel.setAnalogInput(levelPct);
+  zbDistance.setAnalogInput(distanceCm);
+  sentLevel = levelPct;
+  sentDistance = distanceCm;
 
   // Reporting config needs a running stack, hence not in setupZigbee()
   zbLevel.setAnalogInputReporting(REPORT_MIN_S, REPORT_MAX_S, REPORT_DELTA);
