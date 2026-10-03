@@ -167,6 +167,9 @@ void recompute() {
 }
 
 void handleEvent(const Event &e) {
+  // Buttons only act in normal mode; the pairing screen owns the panel until joined
+  if (display.isPairing() && (e.type == EventType::ButtonShort || e.type == EventType::ButtonLong)) return;
+
   switch (e.type) {
     case EventType::Distance:
       distanceCm = e.value;
