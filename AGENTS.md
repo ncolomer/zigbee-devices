@@ -227,6 +227,22 @@ Hardware design files live alongside firmware in each project's `hardware/` fold
 - **Prefer project-local library tables** (`fp-lib-table`/`sym-lib-table` inside `hardware/`, as `garage-console` already does) over relying on global KiCad library aliases defined only in this machine's KiCad config — a global alias doesn't travel with the repo and silently breaks the project for anyone else who clones it.
 - **Save before running DRC, never in the same batch/call.** DRC reads the saved file from disk; calling it alongside a save can read pre-save state and report stale results.
 - **Zone fills go stale after copper edits.** After routing a trace, adding a via, or moving a component near a copper pour, refill zones before trusting DRC output (native `B` / Fill All Zones in KiCad, or Konnect's `refill_zones` tool) — otherwise clearance violations can be false in either direction (phantom errors against an un-refreshed pour, or a false "clean" result).
+- **Fab export gate.** Never export fab files (gerbers, position files, IPC-2581, ODB++) from a board whose zones weren't just refilled: gerbers are plotted from the *stored* fill, and a stale pour once shorted 3V3 to GND on ordered boards. Run `scripts/fab-gate.sh <board.kicad_pcb>` first, which does:
+  ```bash
+  kicad-cli pcb drc --refill-zones --save-board --severity-error --exit-code-violations -o "$report" "$board"
+  ```
+  It refills all zones, saves the board, and fails on any DRC error. It rewrites the board file, so KiCad must be closed (the script refuses otherwise). Re-run it after the last copper edit, then export.
+- **Fab export hook.** `.claude/settings.json` runs the gate before Konnect's `export_gerber`, `export_manufacturing_package`, `export_position_file`, `export_ipc2581` and `export_odb`, and blocks the export if it fails (exit code 2 is what blocks a hook; the script's stderr goes back to the agent). Requires `jq` and `kicad-cli` on `PATH`. It only guards agent calls through Konnect, not exports done by hand in the KiCad GUI.
+  ```json
+  {
+    "hooks": {
+      "PreToolUse": [{
+        "matcher": "mcp__konnect__(export_gerber|export_manufacturing_package|export_position_file|export_ipc2581|export_odb)",
+        "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/fab-gate.sh" }]
+      }]
+    }
+  }
+  ```
 - **Pad geometry (size/shape/rotation) isn't exposed by Konnect's read tools** — `get_component_pads`/`get_footprint_info` return position/net/layer only. For precise clearance work near a pad edge, read the `.kicad_mod` file directly rather than estimating.
 - **`check_clearance` measures footprint-anchor-to-anchor distance, not real copper clearance** — don't use it to predict whether a trace/via will clash with a pad; it will silently return numbers many times larger than the real gap.
 - **No tool exists to delete a zone/copper pour** (`add_zone`/`add_copper_pour` are add-only; `delete_graphics` explicitly excludes zones). Rebuilding a pour currently has no supported path through Konnect; track upstream issue #431.
