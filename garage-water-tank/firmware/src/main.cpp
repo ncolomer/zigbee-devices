@@ -235,6 +235,10 @@ void setupZigbee() {
   Zigbee.addEndpoint(&zbMinDistance);
   Zigbee.addEndpoint(&zbMaxDistance);
 
+  // Shown until joined; the panel stays on and level draws are skipped meanwhile
+  display.startPairing();
+  wakeDisplay();
+
   esp_zb_cfg_t zigbeeConfig = ZIGBEE_DEFAULT_ED_CONFIG();
   if (!Zigbee.begin(&zigbeeConfig, false)) {
     DEBUG_PRINTLN("Zigbee failed to start! Rebooting...");
@@ -250,6 +254,8 @@ void setupZigbee() {
 void checkJoined() {
   if (joined || !Zigbee.connected()) return;
   joined = true;
+  display.stopPairing();
+  wakeDisplay();
 
   // Reporting config needs a running stack, hence not in setupZigbee()
   zbLevel.setAnalogInputReporting(REPORT_MIN_S, REPORT_MAX_S, REPORT_DELTA);
@@ -274,7 +280,6 @@ void setup() {
   statusLed.blink(BLINK_MS, 1.0, 1);
 
   if (!display.begin()) DEBUG_PRINTLN("Display not found");
-  wakeDisplay();
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), onButton, CHANGE);
@@ -287,7 +292,7 @@ void loop() {
   Event e;
   if (xQueueReceive(events, &e, pdMS_TO_TICKS(100))) handleEvent(e);
 
-  if (displayOn && millis() - displayOnAt >= DISPLAY_ON_MS) {
+  if (displayOn && !display.isPairing() && millis() - displayOnAt >= DISPLAY_ON_MS) {
     display.setOn(false);
     displayOn = false;
   }
