@@ -146,11 +146,13 @@ void checkFactoryReset() {
   }
 }
 
+// Zigbee writes can't take the Zigbee lock from their callback, so they are finished here.
 // Only the physical switches own the state: put it back if the coordinator wrote to it
-void restoreOverriddenStates() {
+void applyZigbeeWrites() {
   uint16_t state = inputs.state();
   for (uint8_t i = 0; i < CHANNELS; i++) {
     if (zbInputs[i].takeStateOverridden()) zbInputs[i].setState(state & (1 << i));
+    if (zbInputs[i].takeSwitchTypeChanged()) zbInputs[i].syncSwitchTypeMirror();
   }
 }
 
@@ -170,7 +172,7 @@ void loop() {
   InputEvent e;
   if (xQueueReceive(events, &e, pdMS_TO_TICKS(100))) handleInput(e);
 
-  restoreOverriddenStates();
+  applyZigbeeWrites();
   checkFactoryReset();
   checkJoined();
 }

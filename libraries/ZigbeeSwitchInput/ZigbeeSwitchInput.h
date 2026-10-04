@@ -7,7 +7,9 @@
 #include <functional>
 
 // Physical switch input exposed as a Zigbee endpoint.
-// genOnOffSwitchCfg switchType (0x0000): 0=toggle, 1=momentary
+// Mode (0=toggle, 1=momentary) is written through genOnOff onTime (0x4001), the same trick as
+// ZigbeeRelaySwitch: the stack rejects writes to genOnOffSwitchCfg switchType (NOT_AUTHORIZED) and to
+// custom attribute IDs in genOnOff (INVALID_VALUE). switchType only mirrors the mode.
 // Commands go to the endpoint's binding table, so bindings made from Zigbee2MQTT work.
 
 class ZigbeeSwitchInput : public ZigbeeEP {
@@ -29,6 +31,9 @@ public:
   void setState(bool state);
   // True once if a coordinator write overrode the state; call setState() again to restore it
   bool takeStateOverridden();
+  // Copies the mode to switchType; can't run on the Zigbee task (lock)
+  void syncSwitchTypeMirror();
+  bool takeSwitchTypeChanged();
 
   bool sendOn();
   bool sendOff();
@@ -41,6 +46,7 @@ private:
   uint8_t _switch_type;
   bool _state;
   volatile bool _state_overridden;
+  volatile bool _switch_type_changed;
 
   esp_zb_attribute_list_t *_switch_cfg_cluster = nullptr;
 

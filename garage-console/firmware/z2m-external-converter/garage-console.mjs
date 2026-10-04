@@ -2,7 +2,7 @@
  * Zigbee2MQTT external converter for the DIY Garage Console (XIAO ESP32C6, 16 switch inputs).
  *
  * Endpoint N is connector JN, exposed as '1'..'16'. Per endpoint:
- * - switch_type (genOnOffSwitchCfg switchType, read/write): 'momentary' sends a Toggle on every
+ * - switch_type (genOnOff onTime, read/write; genOnOffSwitchCfg switchType mirrors it, read-only): 'momentary' sends a Toggle on every
  *   press, 'toggle' follows the switch position (closed = ON) and sends On/Off.
  * - state (genOnOff onOff, read-only, reported on change): the switch position, toggle mode only.
  * - action: toggle_N / on_N / off_N, also usable as a binding source (Bind tab, genOnOff).
@@ -29,8 +29,8 @@ export default {
                 name: 'switch_type',
                 endpointName,
                 lookup: {toggle: 0, momentary: 1},
-                cluster: 'genOnOffSwitchCfg',
-                attribute: 'switchType',
+                cluster: 'genOnOff',
+                attribute: 'onTime',  // switchType itself is not writable (NOT_AUTHORIZED)
                 description: 'momentary: a press sends Toggle. toggle: follows the switch position and sends On/Off',
                 access: 'ALL',
                 entityCategory: 'config',

@@ -10,6 +10,7 @@
 // genOnOffSwitchCfg attribute ID (ZCL spec, not defined as a constant in the ESP SDK)
 #define ZB_ATTR_SWITCH_CFG_SWITCH_TYPE    0x0000
 #define ZB_ATTR_SWITCH_CFG_SWITCH_ACTIONS 0x0010
+#define ZB_ATTR_ON_OFF_MODE               ESP_ZB_ZCL_ATTR_ON_OFF_ON_TIME  // writable mode, see the header
 
 esp_zb_cluster_list_t *ZigbeeSwitchInput::_createClusters() {
   esp_zb_cluster_list_t *cluster_list = esp_zb_zcl_cluster_list_create();
@@ -21,17 +22,19 @@ esp_zb_cluster_list_t *ZigbeeSwitchInput::_createClusters() {
   esp_zb_attribute_list_t *on_off_server = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_ON_OFF);
   esp_zb_cluster_add_attr(on_off_server, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
                           ESP_ZB_ZCL_ATTR_TYPE_BOOL, ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, &on_off);
+  uint16_t mode = _switch_type;
+  esp_zb_cluster_add_attr(on_off_server, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ZB_ATTR_ON_OFF_MODE,
+                          ESP_ZB_ZCL_ATTR_TYPE_U16, ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, &mode);
   esp_zb_cluster_list_add_on_off_cluster(cluster_list, on_off_server, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   // Client: lets Z2M bind this endpoint to the devices it controls
   esp_zb_cluster_list_add_on_off_cluster(cluster_list, esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_ON_OFF),
                                          ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  // Created by hand: the ZCL spec makes switchType read-only, we want it writable
   uint8_t switch_actions = 1;  // active low, fixed by the hardware pull-up
   _switch_cfg_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG);
   esp_zb_cluster_add_attr(_switch_cfg_cluster, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG, ZB_ATTR_SWITCH_CFG_SWITCH_TYPE,
-                          ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, &_switch_type);
+                          ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY, &_switch_type);
   esp_zb_cluster_add_attr(_switch_cfg_cluster, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG, ZB_ATTR_SWITCH_CFG_SWITCH_ACTIONS,
                           ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY, &switch_actions);
   esp_zb_cluster_list_add_on_off_switch_config_cluster(cluster_list, _switch_cfg_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
@@ -40,7 +43,7 @@ esp_zb_cluster_list_t *ZigbeeSwitchInput::_createClusters() {
 }
 
 ZigbeeSwitchInput::ZigbeeSwitchInput(uint8_t endpoint)
-  : ZigbeeEP(endpoint), _switch_type(SWITCH_MOMENTARY), _state(false), _state_overridden(false) {
+  : ZigbeeEP(endpoint), _switch_type(SWITCH_MOMENTARY), _state(false), _state_overridden(false), _switch_type_changed(false) {
   _device_id = ESP_ZB_HA_ON_OFF_SWITCH_DEVICE_ID;
   _cluster_list = _createClusters();
   _ep_config = {
@@ -54,6 +57,22 @@ ZigbeeSwitchInput::ZigbeeSwitchInput(uint8_t endpoint)
 void ZigbeeSwitchInput::setDefaultSwitchType(uint8_t switchType) {
   _switch_type = switchType;
   esp_zb_cluster_update_attr(_switch_cfg_cluster, ZB_ATTR_SWITCH_CFG_SWITCH_TYPE, &switchType);
+  esp_zb_attribute_list_t *on_off = esp_zb_cluster_list_get_cluster(_cluster_list, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  uint16_t mode = switchType;
+  esp_zb_cluster_update_attr(on_off, ZB_ATTR_ON_OFF_MODE, &mode);
+}
+
+void ZigbeeSwitchInput::syncSwitchTypeMirror() {
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zcl_set_attribute_val(_endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
+                               ZB_ATTR_SWITCH_CFG_SWITCH_TYPE, &_switch_type, false);
+  esp_zb_lock_release();
+}
+
+bool ZigbeeSwitchInput::takeSwitchTypeChanged() {
+  bool changed = _switch_type_changed;
+  _switch_type_changed = false;
+  return changed;
 }
 
 void ZigbeeSwitchInput::setState(bool state) {
@@ -105,11 +124,12 @@ void ZigbeeSwitchInput::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t
     return;
   }
 
-  if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG
-      && message->attribute.id == ZB_ATTR_SWITCH_CFG_SWITCH_TYPE
-      && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) {
-    _switch_type = *(uint8_t *)message->attribute.data.value;
-    DEBUG_PRINTLN("ep %d: switchType = %u", _endpoint, _switch_type);
+  if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF
+      && message->attribute.id == ZB_ATTR_ON_OFF_MODE
+      && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+    _switch_type = *(uint16_t *)message->attribute.data.value;
+    DEBUG_PRINTLN("ep %d: switch mode = %u", _endpoint, _switch_type);
+    _switch_type_changed = true;
     if (_on_switch_type_changed != nullptr) {
       _on_switch_type_changed(_switch_type);
     }
