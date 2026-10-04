@@ -19,6 +19,7 @@
 #define RESET_PIN               BOOT_PIN      // XIAO BOOT button, GPIO9
 
 /* Configuration */
+#define BINDING_TABLE_SIZE      64
 #define BLINK_MS                100
 #define FACTORY_RESET_MS        3000
 
@@ -96,6 +97,11 @@ void setupZigbee() {
   }
 
   Zigbee.setRxOnWhenIdle(true);  // mains-powered, must receive bind/config requests right away
+
+  // Z2M binds each endpoint to the coordinator (16 entries), then every user binding adds more;
+  // the default table (16) is full right after pairing. Only effective before the stack starts.
+  esp_err_t bindRet = esp_zb_aps_src_binding_table_size_set(BINDING_TABLE_SIZE);
+  DEBUG_PRINTLN("binding table size %d: %s", BINDING_TABLE_SIZE, esp_err_to_name(bindRet));
 
   esp_zb_cfg_t zigbeeConfig = ZIGBEE_DEFAULT_ED_CONFIG();
   if (!Zigbee.begin(&zigbeeConfig, false)) {

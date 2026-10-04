@@ -22,7 +22,8 @@ export default {
     description: 'DIY Zigbee 16-channel switch input console',
     extend: [
         m.deviceEndpoints({endpoints: Object.fromEntries(endpoints.map((name, i) => [name, i + 1]))}),
-        m.commandsOnOff({endpointNames: endpoints}),
+        // The reporting setup of 'state' already binds genOnOff to the coordinator
+        m.commandsOnOff({endpointNames: endpoints, bind: false}),
         ...endpoints.map((endpointName) =>
             m.enumLookup({
                 name: 'switch_type',
