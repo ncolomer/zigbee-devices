@@ -98,10 +98,12 @@ void setupZigbee() {
 
   Zigbee.setRxOnWhenIdle(true);  // mains-powered, must receive bind/config requests right away
 
-  // Z2M binds each endpoint to the coordinator (16 entries), then every user binding adds more;
-  // the default table (16) is full right after pairing. Only effective before the stack starts.
-  esp_err_t bindRet = esp_zb_aps_src_binding_table_size_set(BINDING_TABLE_SIZE);
-  DEBUG_PRINTLN("binding table size %d: %s", BINDING_TABLE_SIZE, esp_err_to_name(bindRet));
+  // Z2M binds each endpoint to the coordinator (16 entries), then every user binding adds more; the
+  // default tables (16) are full right after pairing. Both the source and the destination table must be
+  // raised, and only before the stack starts.
+  esp_err_t srcRet = esp_zb_aps_src_binding_table_size_set(BINDING_TABLE_SIZE);
+  esp_err_t dstRet = esp_zb_aps_dst_binding_table_size_set(BINDING_TABLE_SIZE);
+  DEBUG_PRINTLN("binding tables %d: src %s, dst %s", BINDING_TABLE_SIZE, esp_err_to_name(srcRet), esp_err_to_name(dstRet));
 
   esp_zb_cfg_t zigbeeConfig = ZIGBEE_DEFAULT_ED_CONFIG();
   if (!Zigbee.begin(&zigbeeConfig, false)) {
