@@ -35,8 +35,8 @@ External converter in `z2m-external-converter/garage-water-tank.mjs`:
 |--------|-------------|
 | `water_level` | Level in % |
 | `water_distance` | Sensor-to-water distance in cm |
-| `water_min_distance` | Config: distance when full |
-| `water_max_distance` | Config: distance when empty |
+| `calibration_full` | Config: distance when full |
+| `calibration_empty` | Config: distance when empty |
 
 Set both distances after pairing: the level is unknown until then. They are kept in NVS.
 
