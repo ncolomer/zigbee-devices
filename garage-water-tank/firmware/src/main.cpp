@@ -31,6 +31,7 @@
 #define DEBOUNCE_MS             50
 #define LONG_PRESS_MS           2000
 #define BLINK_MS                100
+#define PAIRING_BLINK_MS        1000
 #define REPORT_MIN_S            60
 #define REPORT_MAX_S            3600          // level can stay flat for hours; keeps the history alive
 #define REPORT_DELTA            1
@@ -59,6 +60,9 @@ float sentDistance = NAN;
 
 bool displayOn = false;
 uint32_t displayOnAt = 0;
+bool pairing = false;
+bool pairingIconOn = false;
+uint32_t pairingPhaseAt = 0;
 bool firstPairing = false;
 bool joined = false;
 
@@ -79,25 +83,40 @@ void loadSettings() {
   savedMarkPct = markPct;
 }
 
-/* Button: the ISR only classifies the press, loop() acts on it */
+/* Button: the ISR handles short presses on release; loop() fires the long press while still held */
 
 volatile uint32_t pressedAt = 0;
+volatile bool longFired = false;
 
 void IRAM_ATTR onButton() {
   uint32_t now = millis();
   if (gpio_get_level((gpio_num_t)BUTTON_PIN) == 0) {
     pressedAt = now;
+    longFired = false;
     return;
   }
   if (pressedAt == 0) return;  // released without a recorded press (held at boot)
   uint32_t held = now - pressedAt;
   pressedAt = 0;
-  if (held < DEBOUNCE_MS) return;
+  if (longFired) {  // already handled; this release must not count as a short press
+    longFired = false;
+    return;
+  }
+  if (held < DEBOUNCE_MS) return;  // contact bounce
 
-  Event e = { held >= LONG_PRESS_MS ? EventType::ButtonLong : EventType::ButtonShort, 0 };
+  Event e = { EventType::ButtonShort, 0 };
   BaseType_t woken = pdFALSE;
   xQueueSendFromISR(events, &e, &woken);
   if (woken) portYIELD_FROM_ISR();
+}
+
+void handleEvent(const Event &e);
+
+void checkLongPress() {
+  uint32_t since = pressedAt;
+  if (since == 0 || longFired || millis() - since < LONG_PRESS_MS) return;
+  longFired = true;
+  handleEvent({ EventType::ButtonLong, 0 });
 }
 
 /* Zigbee writes arrive on the Zigbee task; forward them instead of touching I2C/NVS here */
@@ -119,8 +138,9 @@ bool differs(float a, float b) {
 
 void refreshDisplay() {
   if (!displayOn) return;
-  if (isnan(levelPct)) display.showUnknown();
-  else display.showLevel(levelPct, markPct);
+  bool icon = pairing && pairingIconOn;
+  if (isnan(levelPct)) display.showUnknown(icon);
+  else display.showLevel(levelPct, markPct, icon);
 }
 
 void wakeDisplay() {
@@ -134,12 +154,14 @@ void publish() {
   if (!joined) return;  // attributes only exist once the stack has registered the endpoints
   if (differs(levelPct, sentLevel)) {
     bool nanChanged = isnan(levelPct) != isnan(sentLevel);
-      if (nanChanged) zbLevel.reportAnalogInput();
+    zbLevel.setAnalogInput(levelPct);
+    if (nanChanged) zbLevel.reportAnalogInput();
     sentLevel = levelPct;
   }
   if (differs(distanceCm, sentDistance)) {
     bool nanChanged = isnan(distanceCm) != isnan(sentDistance);
-      if (nanChanged) zbDistance.reportAnalogInput();
+    zbDistance.setAnalogInput(distanceCm);
+    if (nanChanged) zbDistance.reportAnalogInput();
     sentDistance = distanceCm;
   }
 }
@@ -166,9 +188,6 @@ void recompute() {
 }
 
 void handleEvent(const Event &e) {
-  // Buttons only act in normal mode; the pairing screen owns the panel until joined
-  if (display.isPairing() && (e.type == EventType::ButtonShort || e.type == EventType::ButtonLong)) return;
-
   switch (e.type) {
     case EventType::Distance:
       distanceCm = e.value;
@@ -213,12 +232,10 @@ void setupZigbee() {
   zbLevel.setAnalogInputApplication(ESP_ZB_ZCL_AI_PERCENTAGE_OTHER);
   zbLevel.setAnalogInputDescription("Water level (%)");
   zbLevel.setAnalogInputResolution(0.1);
-  zbLevel.setAnalogInput(levelPct);
 
   zbDistance.addAnalogInput();
   zbDistance.setAnalogInputDescription("Distance (cm)");
   zbDistance.setAnalogInputResolution(0.1);
-  zbDistance.setAnalogInput(distanceCm);
 
   zbMinDistance.addAnalogOutput();
   zbMinDistance.setAnalogOutputDescription("Min distance, tank full (cm)");
@@ -237,9 +254,10 @@ void setupZigbee() {
   Zigbee.addEndpoint(&zbMinDistance);
   Zigbee.addEndpoint(&zbMaxDistance);
 
-  // Shown until joined; the panel stays on and level draws are skipped meanwhile
-  display.startPairing();
-  wakeDisplay();
+  // Icon blinks on top of the meter until joined; starts hidden so a quick join never shows it
+  pairing = true;
+  pairingIconOn = false;
+  pairingPhaseAt = millis();
 
   esp_zb_cfg_t zigbeeConfig = ZIGBEE_DEFAULT_ED_CONFIG();
   if (!Zigbee.begin(&zigbeeConfig, false)) {
@@ -256,7 +274,7 @@ void setupZigbee() {
 void checkJoined() {
   if (joined || !Zigbee.connected()) return;
   joined = true;
-  display.stopPairing();
+  pairing = false;
   wakeDisplay();
 
   // The stack only accepts attribute writes once running, so initial values go out here
@@ -290,6 +308,7 @@ void setup() {
   statusLed.blink(BLINK_MS, 1.0, 1);
 
   if (!display.begin()) DEBUG_PRINTLN("Display not found");
+  wakeDisplay();
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), onButton, CHANGE);
@@ -302,10 +321,17 @@ void loop() {
   Event e;
   if (xQueueReceive(events, &e, pdMS_TO_TICKS(100))) handleEvent(e);
 
-  if (displayOn && !display.isPairing() && millis() - displayOnAt >= DISPLAY_ON_MS) {
+  if (displayOn && millis() - displayOnAt >= DISPLAY_ON_MS) {
     display.setOn(false);
     displayOn = false;
   }
 
+  if (pairing && millis() - pairingPhaseAt >= PAIRING_BLINK_MS) {
+    pairingIconOn = !pairingIconOn;
+    pairingPhaseAt = millis();
+    refreshDisplay();
+  }
+
+  checkLongPress();
   checkJoined();
 }

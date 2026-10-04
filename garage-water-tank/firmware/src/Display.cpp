@@ -5,25 +5,16 @@
 #define SCREEN_HEIGHT   32
 #define SCREEN_ADDRESS  0x3C
 
-#define PAIRING_PHASE_MS  1000
-#define WIFI_ICON_SIZE    24
+#define ICON_SIZE       16
 
 static const uint8_t WIFI_ICON[] PROGMEM = {
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x01, 0xFF, 0x80, 0x07, 0xFF, 0xE0, 0x1F, 0x81, 0xF8, 0x7C, 0x00, 0x3E,
-  0xF0, 0x00, 0x0F, 0xC0, 0xFF, 0x03, 0x03, 0xFF, 0xC0, 0x0F, 0x81, 0xF0,
-  0x1E, 0x00, 0x78, 0x08, 0x00, 0x10, 0x00, 0x7E, 0x00, 0x01, 0xFF, 0x80,
-  0x01, 0xC3, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x00,
-  0x00, 0x3C, 0x00, 0x00, 0x3C, 0x00, 0x00, 0x3C, 0x00, 0x00, 0x18, 0x00
+  0x00, 0x00, 0x00, 0x00, 0x0F, 0xF0, 0x3C, 0x3C, 0xE0, 0x07, 0xC3, 0xC3, 0x1F, 0xF8, 0x38, 0x1C,
+  0x20, 0x04, 0x07, 0xE0, 0x0E, 0x70, 0x00, 0x00, 0x00, 0x00, 0x01, 0x80, 0x01, 0x80, 0x00, 0x00
 };
 
-Display::Display()
-  : _oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1), _mutex(NULL), _task(NULL), _pairing(false), _present(false) {}
+Display::Display() : _oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1), _present(false) {}
 
 bool Display::begin() {
-  _mutex = xSemaphoreCreateMutex();
-  xTaskCreate(taskFunction, "pairing_screen", 3072, this, 1, &_task);
-
   // Adafruit's begin() doesn't check for an ACK, so probe first and run headless if absent
   Wire.begin();
   Wire.beginTransmission(SCREEN_ADDRESS);
@@ -41,33 +32,26 @@ bool Display::begin() {
 
 void Display::setOn(bool on) {
   if (!_present) return;
-  xSemaphoreTake(_mutex, portMAX_DELAY);
   _oled.ssd1306_command(on ? SSD1306_DISPLAYON : SSD1306_DISPLAYOFF);
-  xSemaphoreGive(_mutex);
 }
 
-void Display::showUnknown() {
+// INVERSE keeps it readable over the level bar
+void Display::drawPairingIcon() {
+  _oled.drawBitmap((_oled.width() - ICON_SIZE) / 2, 3, WIFI_ICON, ICON_SIZE, ICON_SIZE, SSD1306_INVERSE);
+}
+
+void Display::showUnknown(bool pairingIcon) {
   if (!_present) return;
-  xSemaphoreTake(_mutex, portMAX_DELAY);
-  if (_pairing) {
-    xSemaphoreGive(_mutex);
-    return;
-  }
   _oled.clearDisplay();
   _oled.drawRect(0, 0, _oled.width(), _oled.height(), SSD1306_WHITE);
   _oled.setCursor(14, _oled.height() / 2);
   _oled.print("?");
+  if (pairingIcon) drawPairingIcon();
   _oled.display();
-  xSemaphoreGive(_mutex);
 }
 
-void Display::showLevel(float pct, float markPct) {
+void Display::showLevel(float pct, float markPct, bool pairingIcon) {
   if (!_present) return;
-  xSemaphoreTake(_mutex, portMAX_DELAY);
-  if (_pairing) {
-    xSemaphoreGive(_mutex);
-    return;
-  }
   const int16_t w = _oled.width();
   const int16_t h = _oled.height();
   const int16_t inner = h - 4;
@@ -87,50 +71,6 @@ void Display::showLevel(float pct, float markPct) {
 
   _oled.setCursor(level < 10 ? 11 : (level < 100 ? 8 : 4), h / 2);
   _oled.printf("%d%%", level);
+  if (pairingIcon) drawPairingIcon();
   _oled.display();
-  xSemaphoreGive(_mutex);
-}
-
-void Display::startPairing() {
-  xSemaphoreTake(_mutex, portMAX_DELAY);
-  _pairing = true;
-  xSemaphoreGive(_mutex);
-  xTaskNotifyGive(_task);
-}
-
-void Display::stopPairing() {
-  // Taking the mutex guarantees the task is not mid-draw once we return
-  xSemaphoreTake(_mutex, portMAX_DELAY);
-  _pairing = false;
-  xSemaphoreGive(_mutex);
-  xTaskNotifyGive(_task);
-}
-
-void Display::taskFunction(void *parameter) {
-  static_cast<Display *>(parameter)->runTask();
-}
-
-void Display::runTask() {
-  for (;;) {
-    while (!_pairing) ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-    // Starts empty, so a quick join never shows the icon
-    bool showIcon = false;
-    while (_pairing) {
-      xSemaphoreTake(_mutex, portMAX_DELAY);
-      if (_pairing && _present) {
-        _oled.clearDisplay();
-        if (showIcon) {
-          _oled.drawBitmap((_oled.width() - WIFI_ICON_SIZE) / 2, (_oled.height() - WIFI_ICON_SIZE) / 2 - 2,
-                           WIFI_ICON, WIFI_ICON_SIZE, WIFI_ICON_SIZE, SSD1306_WHITE);
-        }
-        _oled.display();
-      }
-      xSemaphoreGive(_mutex);
-
-      // Returns early when stopPairing() notifies
-      ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(PAIRING_PHASE_MS));
-      showIcon = !showIcon;
-    }
-  }
 }
