@@ -44,7 +44,7 @@ uint32_t resetPressedAt = 0;
 uint8_t loadSwitchType(uint8_t index) {
   char key[16];
   snprintf(key, sizeof(key), "sw_type_%d", index);
-  nvs.begin("garage-console", true);
+  nvs.begin("garage-console", false);  // read-only fails while the namespace doesn't exist yet
   uint8_t val = nvs.getUChar(key, ZigbeeSwitchInput::SWITCH_MOMENTARY);
   nvs.end();
   return val;
