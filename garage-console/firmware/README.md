@@ -56,5 +56,6 @@ pio run -e debug -t upload
 ## Troubleshooting
 
 - **No input events**: `PCF8575 not found` in the debug log means the I²C wiring or address is wrong.
+- **Reconfigure in Z2M logs `TABLE_FULL`**: expected after the first successful configure. The ESP stack rejects a bind that already exists; the existing bindings are untouched.
 - **Re-pair**: hold BOOT for 3 s.
 - OTA is not supported yet.
