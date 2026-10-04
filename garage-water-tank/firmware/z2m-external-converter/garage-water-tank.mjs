@@ -9,13 +9,11 @@
  * - EP3 calibration_full: distance in cm when the tank is full (100%)
  * - EP4 calibration_empty: distance in cm when the tank is empty (0%)
  *
- * The level is unknown (null) until both distances are set,
- * and while the sensor is not answering.
+ * The firmware reports NaN while a value is unknown (distances not set yet, sensor not
+ * answering). The default numeric converter rejects NaN: Z2M logs an error and keeps the
+ * last value. Accepted: with a working sensor it should not happen.
  *
  * Notes on the numeric() calls below:
- * - The firmware reports NaN for "unknown". The default converter throws on NaN
- *   (assertNumber), which makes Z2M drop the message and keep the last value, so
- *   each fzConvert maps NaN to null (Home Assistant then shows the entity as unknown).
  * - The inputs ('water') and outputs ('calibration') need separate keys: Z2M uses the
  *   first converter matching a key, so a shared one lands every set/get on the wrong cluster.
  * - One call per endpoint with plain strings: older Z2M versions print per-endpoint
@@ -41,10 +39,7 @@ export default {
             access: 'STATE_GET',
             cluster: 'genAnalogInput',
             attribute: 'presentValue',
-            fzConvert: (model, msg) => {
-                if (msg.endpoint.ID !== 1 || msg.data.presentValue === undefined) return;
-                return {water_level: Number.isNaN(msg.data.presentValue) ? null : Math.round(msg.data.presentValue * 10) / 10};
-            },
+            precision: 1,
             // The level can stay flat for hours, so a 1 h max keeps the history alive
             reporting: {min: 60, max: '1_HOUR', change: 1},
         }),
@@ -57,10 +52,7 @@ export default {
             access: 'STATE_GET',
             cluster: 'genAnalogInput',
             attribute: 'presentValue',
-            fzConvert: (model, msg) => {
-                if (msg.endpoint.ID !== 2 || msg.data.presentValue === undefined) return;
-                return {water_distance: Number.isNaN(msg.data.presentValue) ? null : Math.round(msg.data.presentValue * 10) / 10};
-            },
+            precision: 1,
             reporting: {min: 60, max: '1_HOUR', change: 1},
         }),
         m.numeric({
@@ -76,10 +68,7 @@ export default {
             valueMin: 3,
             valueMax: 600,
             valueStep: 0.1,
-            fzConvert: (model, msg) => {
-                if (msg.endpoint.ID !== 3 || msg.data.presentValue === undefined) return;
-                return {calibration_full: Number.isNaN(msg.data.presentValue) ? null : Math.round(msg.data.presentValue * 10) / 10};
-            },
+            precision: 1,
         }),
         m.numeric({
             name: 'calibration',
@@ -94,10 +83,7 @@ export default {
             valueMin: 3,
             valueMax: 600,
             valueStep: 0.1,
-            fzConvert: (model, msg) => {
-                if (msg.endpoint.ID !== 4 || msg.data.presentValue === undefined) return;
-                return {calibration_empty: Number.isNaN(msg.data.presentValue) ? null : Math.round(msg.data.presentValue * 10) / 10};
-            },
+            precision: 1,
         }),
     ],
     meta: {
