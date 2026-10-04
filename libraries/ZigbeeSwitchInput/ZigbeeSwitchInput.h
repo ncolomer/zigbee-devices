@@ -44,7 +44,6 @@ protected:
 
 private:
   uint8_t _switch_type;
-  bool _state;
   volatile bool _state_overridden;
   volatile bool _switch_type_changed;
 

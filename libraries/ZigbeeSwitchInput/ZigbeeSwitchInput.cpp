@@ -43,7 +43,7 @@ esp_zb_cluster_list_t *ZigbeeSwitchInput::_createClusters() {
 }
 
 ZigbeeSwitchInput::ZigbeeSwitchInput(uint8_t endpoint)
-  : ZigbeeEP(endpoint), _switch_type(SWITCH_MOMENTARY), _state(false), _state_overridden(false), _switch_type_changed(false) {
+  : ZigbeeEP(endpoint), _switch_type(SWITCH_MOMENTARY), _state_overridden(false), _switch_type_changed(false) {
   _device_id = ESP_ZB_HA_ON_OFF_SWITCH_DEVICE_ID;
   _cluster_list = _createClusters();
   _ep_config = {
@@ -76,8 +76,6 @@ bool ZigbeeSwitchInput::takeSwitchTypeChanged() {
 }
 
 void ZigbeeSwitchInput::setState(bool state) {
-  _state = state;
-
   esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_zcl_set_attribute_val(_endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
                                ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, &state, false);
