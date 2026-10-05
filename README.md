@@ -6,7 +6,9 @@ DIY Zigbee firmware projects for the [Seeed Studio XIAO ESP32C6](https://wiki.se
 
 | Project | Description |
 |---|---|
+| `garage-console` | 16-input switch console (Zigbee toggle/on-off sources) |
 | `garage-doors` | 4-relay switch controller for garage and yard doors/gates |
+| `garage-water-tank` | Ultrasonic water tank level monitor (OLED + Zigbee) |
 | `water-meter` | Battery-powered pulse counter for mechanical water meters |
 
 ## Hardware

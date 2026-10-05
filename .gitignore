@@ -10,7 +10,8 @@ node_modules/
 
 # macOS
 .DS_Store
-.claude/
+.claude/*
+!.claude/settings.json
 *.zip
 
 # Local MCP server config (machine-specific server paths/setup, not shared)

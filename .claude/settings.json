@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__konnect__(export_gerber|export_manufacturing_package|export_position_file|export_ipc2581|export_odb)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/fab-gate.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
