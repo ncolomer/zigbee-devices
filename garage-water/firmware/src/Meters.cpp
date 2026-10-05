@@ -4,13 +4,13 @@
 
 #define METER1_PIN     D1
 #define METER2_PIN     D2
-#define CLOSE_HOLD_US  100000u   // line must sit LOW this long (no edge) to confirm contact closed
-#define OPEN_HOLD_US   500000u   // ...and HIGH this long to re-arm; absorbs slow chatter at the switching point
-#define SETTLE_POLL_MS 10        // re-check rate while a change waits for its hold time
+#define REARM_HOLD_US  500000u   // line must sit HIGH this long (no edge) to re-arm; absorbs chatter at the switching point
+#define SETTLE_POLL_MS 10        // re-check rate while waiting for the re-arm hold time
 
 void IRAM_ATTR Meters::onEdge(void *arg) {
   Line *l = (Line *)arg;
   l->last_us = micros();
+  l->edges = l->edges + 1;
   BaseType_t woken = pdFALSE;
   vTaskNotifyGiveFromISR(l->task, &woken);
   if (woken) portYIELD_FROM_ISR();
@@ -23,6 +23,7 @@ void Meters::begin(QueueHandle_t events) {
     Line &l = _lines[i];
     l.pin = pins[i];
     l.last_us = micros();
+    l.edges = 0;
     pinMode(l.pin, INPUT_PULLUP);
     l.closed = digitalRead(l.pin) == LOW;  // no count for a contact already closed at boot
   }
@@ -39,26 +40,28 @@ void Meters::taskFunction(void *arg) {
   ((Meters *)arg)->runTask();
 }
 
-// One pulse per confirmed open -> closed transition. A closed contact must then stay HIGH
-// for OPEN_HOLD_US before the next pulse can count, so bounce or a contact dithering at its
-// switching point (low flow) counts once, and a contact stuck closed never recounts.
+// Counts on the first LOW seen while armed, then ignores the line until it has stayed HIGH for
+// REARM_HOLD_US. Bounce, chatter and a contact parked closed (low flow) count once; waiting for a
+// quiet LOW instead would miss pulses whenever the line keeps chattering while the contact is closed.
 void Meters::runTask() {
   for (;;) {
     bool pending = false;
     for (uint8_t i = 0; i < METERS; i++) {
       Line &l = _lines[i];
-      bool low = digitalRead(l.pin) == LOW;  // read level before last_us: a newer edge then only delays confirmation
+      bool low = digitalRead(l.pin) == LOW;  // read level before last_us: a newer edge then only delays re-arming
       uint32_t last = l.last_us;
       uint32_t quiet_us = micros() - last;
 
-      if (!l.closed && low && quiet_us >= CLOSE_HOLD_US) {
+      if (!l.closed && low) {
         l.closed = true;
+        l.edges = 0;
         PulseEvent e = { i };
         xQueueSend(_events, &e, 0);
-      } else if (l.closed && !low && quiet_us >= OPEN_HOLD_US) {
+      } else if (l.closed && !low && quiet_us >= REARM_HOLD_US) {
         l.closed = false;
+        DEBUG_PRINTLN("Meter %d: re-armed after %u edges", i + 1, l.edges);
       }
-      if (low != l.closed) pending = true;
+      if (l.closed && !low) pending = true;
     }
     ulTaskNotifyTake(pdTRUE, pending ? pdMS_TO_TICKS(SETTLE_POLL_MS) : portMAX_DELAY);
   }

@@ -5,8 +5,7 @@
 
 #define METERS 2
 
-// Reed switch pulse inputs, normally open to GND. One PulseEvent is pushed per confirmed
-// open -> closed transition.
+// Reed switch pulse inputs, normally open to GND. One PulseEvent is pushed per closure.
 class Meters {
 public:
   void begin(QueueHandle_t events);
@@ -16,7 +15,8 @@ private:
     uint8_t pin;
     TaskHandle_t task;
     volatile uint32_t last_us;  // last edge, set in ISR
-    bool closed;                // confirmed contact state, task only
+    volatile uint32_t edges;    // edge count, debug only
+    bool closed;                // pulse counted, waiting for re-arm; task only
   };
 
   QueueHandle_t _events;
