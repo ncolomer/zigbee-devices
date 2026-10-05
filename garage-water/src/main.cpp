@@ -8,7 +8,6 @@
 #include "StatusLed.h"
 #include "Debug.h"
 #include <Preferences.h>
-#include "driver/gpio.h"
 
 /* Zigbee configuration */
 #define ZIGBEE_MANUFACTURER     "DIY"
@@ -31,7 +30,8 @@
 #define DEFAULT_RELAY_STATE        true      // tank by default (fail-safe on a fresh device)
 #define DEFAULT_LITERS_PER_PULSE   10        // per meter, calibratable over Zigbee
 #define SAVE_READING_THRESHOLD_L   1000u     // persist a meter reading every 1 m³
-#define PULSE_DEBOUNCE_US          50000u    // line must be quiet this long before a falling edge counts
+#define CLOSE_HOLD_US              100000u   // line must sit LOW this long (no edge) to confirm contact closed
+#define OPEN_HOLD_US               500000u   // ...and HIGH this long to re-arm; absorbs slow chatter at the switching point
 #define FACTORY_RESET_TIME_MS      3000      // hold BOOT this long to factory-reset
 
 StatusLed statusLed(LED_PIN);
@@ -46,27 +46,20 @@ struct Meter {
   uint8_t pin;
   const char *reading_key;
   const char *lpp_key;
-  volatile uint32_t pulses;    // incremented in ISR
-  volatile uint32_t last_us;   // debounce timestamp
-  uint32_t counted;            // pulses already applied in loop()
+  volatile uint32_t last_us;   // time of last edge, set in ISR
+  bool closed;                 // confirmed contact state, loop() only
   uint32_t liters;             // current reading
   uint32_t nvs_liters;         // last value persisted
   uint16_t liters_per_pulse;
 };
 
 Meter meters[2] = {
-  { &zbMeter1, METER1_PIN, "m1_reading", "m1_lpp", 0, 0, 0, 0, 0, 0 },
-  { &zbMeter2, METER2_PIN, "m2_reading", "m2_lpp", 0, 0, 0, 0, 0, 0 },
+  { &zbMeter1, METER1_PIN, "m1_reading", "m1_lpp", 0, false, 0, 0, 0 },
+  { &zbMeter2, METER2_PIN, "m2_reading", "m2_lpp", 0, false, 0, 0, 0 },
 };
 
-// Every edge restarts the debounce window, so a chattering line (contact resting at its
-// switching point) is never counted; only a falling edge after a quiet period is a pulse.
-void IRAM_ATTR onMeterEdge(Meter &m) {
-  uint32_t now = micros();
-  bool quiet = now - m.last_us >= PULSE_DEBOUNCE_US;
-  m.last_us = now;
-  if (quiet && gpio_get_level((gpio_num_t)m.pin) == 0) m.pulses = m.pulses + 1;
-}
+// The ISR only timestamps edges; processMeters() decides from the settled level.
+void IRAM_ATTR onMeterEdge(Meter &m) { m.last_us = micros(); }
 
 void IRAM_ATTR onMeter1Edge() { onMeterEdge(meters[0]); }
 void IRAM_ATTR onMeter2Edge() { onMeterEdge(meters[1]); }
@@ -182,6 +175,7 @@ void setupMeters() {
     Zigbee.addEndpoint(m.zb);
 
     pinMode(m.pin, INPUT_PULLUP);
+    m.closed = digitalRead(m.pin) == LOW;  // no count for a contact already closed at boot
     DEBUG_PRINTLN("Meter %d: reading=%u L, l/pulse=%u", idx + 1, m.liters, m.liters_per_pulse);
   }
 
@@ -206,18 +200,25 @@ void checkFactoryReset() {
   }
 }
 
+// One pulse per confirmed open -> closed transition. A closed contact must then stay HIGH
+// for OPEN_HOLD_US before the next pulse can count, so bounce or a contact dithering at its
+// switching point (low flow) counts once, and a contact stuck closed never recounts.
 void processMeters() {
   for (uint8_t i = 0; i < 2; i++) {
     Meter &m = meters[i];
-    uint32_t pulses = m.pulses;  // atomic 32-bit read
-    if (pulses == m.counted) continue;
+    bool low = digitalRead(m.pin) == LOW;  // read level before last_us: a newer edge then only delays confirmation
+    uint32_t last = m.last_us;
+    uint32_t quiet_us = micros() - last;
 
-    uint32_t delta = pulses - m.counted;
-    m.counted = pulses;
-    m.liters = min(m.liters + delta * m.liters_per_pulse, (uint32_t)99999999u);
-    m.zb->setReadingLiters(m.liters);
-    saveMeterReading(m);
-    DEBUG_PRINTLN("Meter %d: +%u pulse(s) -> %u L (%.3f m3)", i + 1, delta, m.liters, m.liters / 1000.0f);
+    if (!m.closed && low && quiet_us >= CLOSE_HOLD_US) {
+      m.closed = true;
+      m.liters = min(m.liters + m.liters_per_pulse, (uint32_t)99999999u);
+      m.zb->setReadingLiters(m.liters);
+      saveMeterReading(m);
+      DEBUG_PRINTLN("Meter %d: +1 pulse -> %u L (%.3f m3)", i + 1, m.liters, m.liters / 1000.0f);
+    } else if (m.closed && !low && quiet_us >= OPEN_HOLD_US) {
+      m.closed = false;
+    }
   }
 }
 
