@@ -14,7 +14,7 @@ Shield. It selects the water source with a relay and totals two water meters.
 
 | Function            | Pin  | GPIO   | Notes                                              |
 |---------------------|------|--------|----------------------------------------------------|
-| Relay control       | D4   | 22     | ON/tank = HIGH (de-energized), OFF/grid = LOW      |
+| Relay control       | D4   | 22     | ON/grid = LOW (energized), OFF/tank = HIGH         |
 | Water meter 1 pulse | D1   | 1      | internal pull-up, CHANGE interrupt, settled-level debounce (100 ms close, 500 ms re-arm)|
 | Water meter 2 pulse | D2   | 2      | internal pull-up, CHANGE interrupt, settled-level debounce (100 ms close, 500 ms re-arm)|
 | Factory reset       | BOOT | 9      | onboard button, hold 3 s                           |
@@ -23,11 +23,11 @@ Shield. It selects the water source with a relay and totals two water meters.
 
 **Water source / fail-safe:** the relay idles HIGH (de-energized) via pull-up, and the
 tank is wired to the de-energized side, so an **unpowered device selects the rain tank**.
-Selecting grid (`OFF`) energizes the coil. Relay state is remembered across power loss.
+Selecting grid (`ON`) energizes the coil. Relay state is remembered across power loss.
 
 ## Behavior
 
-- **Relay (EP1)**: Z2M on/off toggles the water source. `ON` = rain tank, `OFF` = grid.
+- **Relay (EP1)**: Z2M on/off toggles the water source. `ON` = grid, `OFF` = rain tank.
   State persists to NVS and is restored (driven to the GPIO) on boot; a fresh device
   defaults to tank.
 - **Water meters (EP2, EP3)**: each pulse adds `liters_per_pulse` to that meter's
@@ -41,7 +41,7 @@ All configuration is done over Zigbee2MQTT after pairing:
 
 | Entity                     | Description                                | Default |
 |----------------------------|--------------------------------------------|---------|
-| `state_relay`              | Water source (ON = tank, OFF = grid)       | tank    |
+| `state_relay`              | Water source (ON = grid, OFF = tank)       | tank    |
 | `water_volume_meter1/2`    | Cumulative volume (m³, writable to calibrate) | 0    |
 | `liters_per_pulse_meter1/2`| Liters per pulse (1–1000)                  | 10      |
 
