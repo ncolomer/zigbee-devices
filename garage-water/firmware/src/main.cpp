@@ -21,13 +21,13 @@
 #define EP_METER_2              3
 
 /* GPIO definitions — XIAO ESP32-C6 + Grove Shield */
-#define RELAY_PIN               D4           // ON/tank = HIGH (de-energized), OFF/grid = LOW (energized)
+#define RELAY_PIN               D4           // ON/grid = LOW (energized), OFF/tank = HIGH (de-energized)
 #define BUTTON_PIN              BOOT_PIN     // GPIO9 onboard boot button (factory reset)
 #define LED_PIN                 LED_BUILTIN
 
 /* Configuration */
-#define RELAY_SWITCH_ACTIONS       0         // active_high: ON(tank)=HIGH, OFF(grid)=LOW
-#define DEFAULT_RELAY_STATE        true      // tank by default (fail-safe on a fresh device)
+#define RELAY_SWITCH_ACTIONS       1         // active_low: ON(grid)=LOW, OFF(tank)=HIGH
+#define DEFAULT_RELAY_STATE        false     // tank by default (fail-safe on a fresh device)
 #define DEFAULT_LITERS_PER_PULSE   10        // per meter, calibratable over Zigbee
 #define SAVE_READING_THRESHOLD_L   1000u     // persist a meter reading every 1 m³
 #define FACTORY_RESET_TIME_MS      3000      // hold BOOT this long to factory-reset
@@ -61,16 +61,17 @@ uint32_t resetPressedAt = 0;
 
 bool loadRelayState() {
   nvs.begin("garage-water", false);
-  bool state = nvs.getBool("relay", DEFAULT_RELAY_STATE);
+  // Key renamed from "relay" when ON changed from tank to grid: an old value would invert the source
+  bool state = nvs.getBool("grid", DEFAULT_RELAY_STATE);
   nvs.end();
   return state;
 }
 
 void saveRelayState(bool state) {
   nvs.begin("garage-water", false);
-  nvs.putBool("relay", state);
+  nvs.putBool("grid", state);
   nvs.end();
-  DEBUG_PRINTLN("Saved relay state: %s", state ? "ON (tank)" : "OFF (grid)");
+  DEBUG_PRINTLN("Saved relay state: %s", state ? "ON (grid)" : "OFF (tank)");
 }
 
 void loadMeter(Meter &m) {
@@ -120,14 +121,14 @@ void setupRelay() {
   zbRelay.setManufacturerAndModel(ZIGBEE_MANUFACTURER, ZIGBEE_MODEL);
   zbRelay.setPowerSource(ZB_POWER_SOURCE_MAINS);
   zbRelay.setDefaultSwitchType(0);                        // toggle / latching
-  zbRelay.setDefaultSwitchActions(RELAY_SWITCH_ACTIONS);  // active_high
+  zbRelay.setDefaultSwitchActions(RELAY_SWITCH_ACTIONS);  // active_low
   zbRelay.setDefaultOnOff(state);                         // restore persisted state
   zbRelay.onStateChanged([](bool on) {
     saveRelayState(on);
   });
   zbRelay.begin();                                        // drives GPIO to restored state
   Zigbee.addEndpoint(&zbRelay);
-  DEBUG_PRINTLN("Relay: restored %s", state ? "ON (tank)" : "OFF (grid)");
+  DEBUG_PRINTLN("Relay: restored %s", state ? "ON (grid)" : "OFF (tank)");
 }
 
 void setupMeters() {

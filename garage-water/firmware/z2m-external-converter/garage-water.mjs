@@ -2,7 +2,7 @@
  * Zigbee2MQTT external converter for DIY Garage Water controller (XIAO ESP32C6, router).
  *
  * Endpoint 1 (relay), genOnOff:
- * - state: ON = rain tank, OFF = grid water (latching, remembered across power loss)
+ * - state: ON = grid water, OFF = rain tank (latching, remembered across power loss)
  *
  * Endpoints 2 & 3 (meter1, meter2), seMetering:
  * - water_volume: cumulative volume (m³), read-only, backed by currentSummReceived.
@@ -31,7 +31,7 @@ export default {
         m.deviceEndpoints({endpoints: {relay: 1, meter1: 2, meter2: 3}}),
         m.onOff({
             endpointNames: ['relay'],
-            description: 'Water source: ON = rain tank, OFF = grid',
+            description: 'Water source: ON = grid, OFF = rain tank',
             powerOnBehavior: false,
         }),
         m.numeric({
