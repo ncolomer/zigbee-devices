@@ -26,6 +26,7 @@ void Meters::begin(QueueHandle_t events) {
     l.edges = 0;
     pinMode(l.pin, INPUT_PULLUP);
     l.closed = digitalRead(l.pin) == LOW;  // no count for a contact already closed at boot
+    DEBUG_PRINTLN("Meter %d: GPIO%d %s at boot", i + 1, l.pin, l.closed ? "LOW (closed, waiting for re-arm)" : "HIGH (armed)");
   }
 
   TaskHandle_t task;
