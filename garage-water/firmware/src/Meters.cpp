@@ -3,7 +3,7 @@
 #include "Debug.h"
 
 #define METER1_PIN     D1
-#define METER2_PIN     D2
+#define METER2_PIN     D0
 #define REARM_HOLD_US  500000u   // line must sit HIGH this long (no edge) to re-arm; absorbs chatter at the switching point
 #define SETTLE_POLL_MS 10        // re-check rate while waiting for the re-arm hold time
 
