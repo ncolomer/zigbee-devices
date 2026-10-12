@@ -21,12 +21,12 @@
 #define EP_METER_2              3
 
 /* GPIO definitions — XIAO ESP32-C6 + Grove Shield */
-#define RELAY_PIN               D4           // ON/grid = LOW (energized), OFF/tank = HIGH (de-energized)
+#define RELAY_PIN               D4           // module on high-level trigger: ON/grid = HIGH (energized), OFF/tank = LOW (de-energized)
 #define BUTTON_PIN              BOOT_PIN     // GPIO9 onboard boot button (factory reset)
 #define LED_PIN                 LED_BUILTIN
 
 /* Configuration */
-#define RELAY_SWITCH_ACTIONS       1         // active_low: ON(grid)=LOW, OFF(tank)=HIGH
+#define RELAY_SWITCH_ACTIONS       0         // active_high: ON(grid)=HIGH, OFF(tank)=LOW
 #define DEFAULT_RELAY_STATE        false     // tank by default (fail-safe on a fresh device)
 #define DEFAULT_LITERS_PER_PULSE   10        // per meter, calibratable over Zigbee
 #define SAVE_READING_THRESHOLD_L   1000u     // persist a meter reading every 1 m³
@@ -121,7 +121,7 @@ void setupRelay() {
   zbRelay.setManufacturerAndModel(ZIGBEE_MANUFACTURER, ZIGBEE_MODEL);
   zbRelay.setPowerSource(ZB_POWER_SOURCE_MAINS);
   zbRelay.setDefaultSwitchType(0);                        // toggle / latching
-  zbRelay.setDefaultSwitchActions(RELAY_SWITCH_ACTIONS);  // active_low
+  zbRelay.setDefaultSwitchActions(RELAY_SWITCH_ACTIONS);  // active_high
   zbRelay.setDefaultOnOff(state);                         // restore persisted state
   zbRelay.onStateChanged([](bool on) {
     saveRelayState(on);
@@ -195,7 +195,8 @@ void handlePulse(const PulseEvent &e) {
 
 void setup() {
   // Hold the relay de-energized (= tank, safe default) until ZigbeeRelaySwitch::begin() drives the pin.
-  pinMode(RELAY_PIN, INPUT_PULLUP);
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   DEBUG_INIT();
