@@ -15,11 +15,11 @@ Shield. It selects the water source with a relay and totals two water meters.
 | Function            | Pin  | GPIO   | Notes                                              |
 |---------------------|------|--------|----------------------------------------------------|
 | Relay control       | D4   | 22     | ON/grid = LOW (energized), OFF/tank = HIGH         |
-| Water meter 1 pulse | D0   | 0      | internal pull-up, CHANGE interrupt, counts first LOW, 500 ms HIGH to re-arm|
-| Water meter 2 pulse | D1   | 1      | internal pull-up, CHANGE interrupt, counts first LOW, 500 ms HIGH to re-arm|
+| Water meter 1 pulse | D1   | 1      | internal pull-up, CHANGE interrupt, counts first LOW, 500 ms HIGH to re-arm|
+| Water meter 2 pulse | D7   | 17     | internal pull-up, CHANGE interrupt, counts first LOW, 500 ms HIGH to re-arm|
 | Factory reset       | BOOT | 9      | onboard button, hold 3 s                           |
 | Status LED          | —    | 15     | pairing / activity feedback                        |
-| Spare               | D2, D7 | 2, 17 | unused (D2 input found dead on the prototype)     |
+| Spare               | D0, D2 | 0, 2  | unused (both inputs found faulty on the prototype) |
 
 **Water source / fail-safe:** the relay idles HIGH (de-energized) via pull-up, and the
 tank is wired to the de-energized side, so an **unpowered device selects the rain tank**.
