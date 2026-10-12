@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+
+  (lib (name "garage_water") (type "KiCad") (uri "${KIPRJMOD}/garage_water.kicad_sym") (options "") (descr "")))
