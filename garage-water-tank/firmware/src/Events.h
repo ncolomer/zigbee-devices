@@ -7,6 +7,7 @@
 enum class EventType : uint8_t {
   ButtonShort,
   ButtonLong,
+  ButtonReset,
   Distance,   // value = cm, NaN on sensor timeout
   MinChanged, // value = cm, written from Zigbee
   MaxChanged

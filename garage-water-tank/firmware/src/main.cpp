@@ -30,6 +30,7 @@
 #define DISPLAY_ON_MS           30000
 #define DEBOUNCE_MS             50
 #define LONG_PRESS_MS           2000
+#define RESET_PRESS_MS          5000
 #define BLINK_MS                100
 #define PAIRING_BLINK_MS        1000
 #define REPORT_MIN_S            60
@@ -83,28 +84,30 @@ void loadSettings() {
   savedMarkPct = markPct;
 }
 
-/* Button: the ISR handles short presses on release; loop() fires the long press while still held */
+/* Button: the ISR classifies short and long presses on release; loop() cues the long press
+   and fires the network reset while still held, so holding past 2 s never resets the mark */
 
 volatile uint32_t pressedAt = 0;
-volatile bool longFired = false;
+volatile bool resetFired = false;
+bool longCued = false;
 
 void IRAM_ATTR onButton() {
   uint32_t now = millis();
   if (gpio_get_level((gpio_num_t)BUTTON_PIN) == 0) {
     pressedAt = now;
-    longFired = false;
+    resetFired = false;
     return;
   }
   if (pressedAt == 0) return;  // released without a recorded press (held at boot)
   uint32_t held = now - pressedAt;
   pressedAt = 0;
-  if (longFired) {  // already handled; this release must not count as a short press
-    longFired = false;
+  if (resetFired) {  // already handled; this release must not count as a press
+    resetFired = false;
     return;
   }
   if (held < DEBOUNCE_MS) return;  // contact bounce
 
-  Event e = { EventType::ButtonShort, 0 };
+  Event e = { held >= LONG_PRESS_MS ? EventType::ButtonLong : EventType::ButtonShort, 0 };
   BaseType_t woken = pdFALSE;
   xQueueSendFromISR(events, &e, &woken);
   if (woken) portYIELD_FROM_ISR();
@@ -114,9 +117,18 @@ void handleEvent(const Event &e);
 
 void checkLongPress() {
   uint32_t since = pressedAt;
-  if (since == 0 || longFired || millis() - since < LONG_PRESS_MS) return;
-  longFired = true;
-  handleEvent({ EventType::ButtonLong, 0 });
+  if (since == 0 || resetFired) {
+    longCued = false;
+    return;
+  }
+  uint32_t held = millis() - since;
+  if (held >= RESET_PRESS_MS) {
+    resetFired = true;
+    handleEvent({ EventType::ButtonReset, 0 });
+  } else if (held >= LONG_PRESS_MS && !longCued) {
+    longCued = true;  // releasing now resets the mark
+    statusLed.blink(BLINK_MS, 1.0, 1);
+  }
 }
 
 /* Zigbee writes arrive on the Zigbee task; forward them instead of touching I2C/NVS here */
@@ -220,11 +232,18 @@ void handleEvent(const Event &e) {
       break;
     case EventType::ButtonLong:
       DEBUG_PRINTLN("button: long press, high-water mark reset");
-      statusLed.blink(BLINK_MS, 1.0, 1);
       markPct = levelPct;
       saveFloat("mark_pct", markPct);
       savedMarkPct = markPct;
       wakeDisplay();
+      break;
+    case EventType::ButtonReset:
+      // Only the Zigbee storage is erased; distances and mark stay in the app NVS namespace
+      DEBUG_PRINTLN("button: very long press, leaving Zigbee network");
+      statusLed.blink(200, 0.5, 3);
+      delay(600);
+      DEBUG_END();
+      Zigbee.factoryReset();
       break;
   }
 }
