@@ -213,6 +213,10 @@ void handleEvent(const Event &e) {
       DEBUG_PRINTLN("button: short press");
       statusLed.blink(BLINK_MS, 1.0, 1);
       wakeDisplay();
+      if (joined) {  // lets the coordinator side be checked against the display on demand
+        zbLevel.reportAnalogInput();
+        zbDistance.reportAnalogInput();
+      }
       break;
     case EventType::ButtonLong:
       DEBUG_PRINTLN("button: long press, high-water mark reset");
