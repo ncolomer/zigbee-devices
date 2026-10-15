@@ -66,7 +66,9 @@ void Display::showLevel(float pct, float markPct, bool pairingIcon) {
   // Drawn only above the bar, so it vanishes once the level reaches the mark
   if (!isnan(markPct)) {
     int16_t markPixels = map(constrain((int)roundf(markPct), 0, 100), 0, 100, 0, inner);
-    if (markPixels > pixels) _oled.drawFastHLine(2, 2 + inner - markPixels, w - 4, SSD1306_WHITE);
+    // 2 px thick, growing upwards so it never merges with the bar; clamped inside the frame
+    int16_t y = max(2, 2 + inner - markPixels - 1);
+    if (markPixels > pixels) _oled.fillRect(2, y, w - 4, 2, SSD1306_WHITE);
   }
 
   _oled.setCursor(level < 10 ? 11 : (level < 100 ? 8 : 4), h / 2);

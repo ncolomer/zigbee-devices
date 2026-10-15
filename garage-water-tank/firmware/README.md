@@ -17,7 +17,7 @@ Mains-powered Zigbee water tank level monitor. An A02YYUW ultrasonic sensor meas
 - **Distance** is the median of the last 7 readings (one per 500 ms), so echo spikes up to 1.5 s long are dropped. Readings more than 10 cm off the median are discarded before entering it, unless they persist for 10 s (the level really moved).
 - **Pairing**: until the device has joined, a small wifi icon blinks (1 s) on top of the meter view; it starts hidden, so a quick join never shows it.
 - **Display** turns on at boot, on button press, then off after 30 s. A short press also sends an immediate level and distance report. It shows the level as a bar and `%`, or `?` while the level is unknown (distances not configured, or sensor silent for 10 s).
-- **High-water mark**: a 1 px line above the bar at the highest level seen (kept in NVS). It disappears when the level reaches it. Releasing the button after 2-5 s resets it to the current level (the LED blinks at 2 s to tell you).
+- **High-water mark**: a 2 px line above the bar at the highest level seen (kept in NVS). It disappears when the level reaches it. Releasing the button after 2-5 s resets it to the current level (the LED blinks at 2 s to tell you).
 - **Network reset**: holding the button for 5 s leaves the Zigbee network and reboots into pairing mode (fires without releasing). Distances and mark are kept.
 - **Zigbee** (end device): level and distance are reported on a 1 % / 1 cm change, at most every 60 s and at least every hour.
 
