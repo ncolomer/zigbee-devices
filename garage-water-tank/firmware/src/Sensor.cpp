@@ -8,6 +8,7 @@
 #define MIN_VALID_MM        30       // below this the sensor is in its dead zone
 #define POST_INTERVAL_MS    500
 #define TIMEOUT_MS          10000
+#define MEDIAN_WINDOW       7        // one sample per post: rejects spikes up to 3 samples (1.5 s)
 
 Sensor::Sensor(HardwareSerial &serial, uint8_t rxPin, uint8_t txPin)
   : _serial(serial), _rxPin(rxPin), _txPin(txPin), _events(NULL) {}
@@ -23,6 +24,20 @@ void Sensor::taskFunction(void *parameter) {
   static_cast<Sensor *>(parameter)->runTask();
 }
 
+// Ultrasonic echoes off walls or condensation give short bursts of wrong distances;
+// a running median drops them while following the slow real level change.
+static float median(const float *samples, uint8_t count) {
+  float sorted[MEDIAN_WINDOW];
+  memcpy(sorted, samples, count * sizeof(float));
+  for (uint8_t i = 1; i < count; i++) {
+    float v = sorted[i];
+    int8_t j = i - 1;
+    for (; j >= 0 && sorted[j] > v; j--) sorted[j + 1] = sorted[j];
+    sorted[j + 1] = v;
+  }
+  return sorted[count / 2];
+}
+
 void Sensor::runTask() {
   uint8_t frame[FRAME_LENGTH];
   uint8_t len = 0;
@@ -30,6 +45,8 @@ void Sensor::runTask() {
   uint32_t lastValid = millis();
   uint32_t lastPost = 0;
   bool fresh = false;
+  float samples[MEDIAN_WINDOW];
+  uint8_t count = 0, next = 0;
 
   for (;;) {
     while (_serial.available()) {
@@ -50,6 +67,7 @@ void Sensor::runTask() {
         continue;
       }
       distanceCm = mm / 10.0f;
+      DEBUG_PRINTLN("Sensor: raw %.1f cm", distanceCm);
       lastValid = millis();
       fresh = true;
     }
@@ -57,8 +75,15 @@ void Sensor::runTask() {
     uint32_t now = millis();
     if (now - lastPost >= POST_INTERVAL_MS) {
       bool timedOut = now - lastValid >= TIMEOUT_MS;
-      if (fresh || timedOut) {
-        Event e = { EventType::Distance, timedOut ? NAN : distanceCm };
+      if (timedOut) {
+        count = next = 0;  // stale samples must not outvote the first ones after recovery
+        Event e = { EventType::Distance, NAN };
+        xQueueSend(_events, &e, 0);
+      } else if (fresh) {
+        samples[next] = distanceCm;
+        next = (next + 1) % MEDIAN_WINDOW;
+        if (count < MEDIAN_WINDOW) count++;
+        Event e = { EventType::Distance, median(samples, count) };
         xQueueSend(_events, &e, 0);
         fresh = false;
       }
