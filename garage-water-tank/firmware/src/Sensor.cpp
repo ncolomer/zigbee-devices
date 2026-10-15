@@ -9,6 +9,8 @@
 #define POST_INTERVAL_MS    500
 #define TIMEOUT_MS          10000
 #define MEDIAN_WINDOW       7        // one sample per post: rejects spikes up to 3 samples (1.5 s)
+#define MAX_JUMP_CM         10       // a real level never moves this much between two samples
+#define MAX_REJECTS         20       // 10 s of consistent "outliers" means the level really moved
 
 Sensor::Sensor(HardwareSerial &serial, uint8_t rxPin, uint8_t txPin)
   : _serial(serial), _rxPin(rxPin), _txPin(txPin), _events(NULL) {}
@@ -47,6 +49,7 @@ void Sensor::runTask() {
   bool fresh = false;
   float samples[MEDIAN_WINDOW];
   uint8_t count = 0, next = 0;
+  uint8_t rejects = 0;
 
   for (;;) {
     while (_serial.available()) {
@@ -76,16 +79,29 @@ void Sensor::runTask() {
     if (now - lastPost >= POST_INTERVAL_MS) {
       bool timedOut = now - lastValid >= TIMEOUT_MS;
       if (timedOut) {
-        count = next = 0;  // stale samples must not outvote the first ones after recovery
+        count = next = rejects = 0;  // stale samples must not outvote the first ones after recovery
         Event e = { EventType::Distance, NAN };
         xQueueSend(_events, &e, 0);
       } else if (fresh) {
-        samples[next] = distanceCm;
-        next = (next + 1) % MEDIAN_WINDOW;
-        if (count < MEDIAN_WINDOW) count++;
-        Event e = { EventType::Distance, median(samples, count) };
-        xQueueSend(_events, &e, 0);
         fresh = false;
+        // Gate before the median so a long burst can't fill the window and become the median
+        float ref = count >= 3 ? median(samples, count) : NAN;
+        bool outlier = !isnan(ref) && fabsf(distanceCm - ref) > MAX_JUMP_CM;
+        if (outlier && ++rejects >= MAX_REJECTS) {
+          DEBUG_PRINTLN("Sensor: level moved to %.1f cm, restarting median", distanceCm);
+          count = next = 0;
+          outlier = false;
+        }
+        if (outlier) {
+          DEBUG_PRINTLN("Sensor: outlier %.1f cm (median %.1f)", distanceCm, ref);
+        } else {
+          rejects = 0;
+          samples[next] = distanceCm;
+          next = (next + 1) % MEDIAN_WINDOW;
+          if (count < MEDIAN_WINDOW) count++;
+          Event e = { EventType::Distance, median(samples, count) };
+          xQueueSend(_events, &e, 0);
+        }
       }
       lastPost = now;
     }
