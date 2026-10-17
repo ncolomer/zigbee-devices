@@ -8,9 +8,10 @@
 #define MIN_VALID_MM        30       // below this the sensor is in its dead zone
 #define POST_INTERVAL_MS    500
 #define TIMEOUT_MS          10000
-#define MEDIAN_WINDOW       7        // one sample per post: rejects spikes up to 3 samples (1.5 s)
-#define MAX_JUMP_CM         10       // a real level never moves this much between two samples
-#define MAX_REJECTS         20       // 10 s of consistent "outliers" means the level really moved
+#define MEDIAN_WINDOW       7        // frames (100-500 ms each in processed mode): rejects bursts up to 3
+#define MAX_JUMP_CM         10       // a real level never moves this much between two frames
+#define MIN_SAMPLES         3        // the median needs this many to outvote one bad frame
+#define REJECT_TIMEOUT_MS   10000    // "outliers" this long mean the level really moved
 
 Sensor::Sensor(HardwareSerial &serial, uint8_t rxPin, uint8_t txPin)
   : _serial(serial), _rxPin(rxPin), _txPin(txPin), _events(NULL) {}
@@ -43,13 +44,13 @@ static float median(const float *samples, uint8_t count) {
 void Sensor::runTask() {
   uint8_t frame[FRAME_LENGTH];
   uint8_t len = 0;
-  float distanceCm = NAN;
+  float filtered = NAN;
   uint32_t lastValid = millis();
   uint32_t lastPost = 0;
   bool fresh = false;
   float samples[MEDIAN_WINDOW];
   uint8_t count = 0, next = 0;
-  uint8_t rejects = 0;
+  uint32_t rejectingSince = 0;
 
   for (;;) {
     while (_serial.available()) {
@@ -69,39 +70,41 @@ void Sensor::runTask() {
         DEBUG_PRINTLN("Sensor: below range (%u mm)", mm);
         continue;
       }
-      distanceCm = mm / 10.0f;
-      DEBUG_PRINTLN("Sensor: raw %.1f cm", distanceCm);
-      lastValid = millis();
+      float cm = mm / 10.0f;
+      uint32_t now = millis();
+      lastValid = now;
+
+      // Gate before the median so a long burst can't fill the window and become the median
+      if (count >= MIN_SAMPLES && fabsf(cm - filtered) > MAX_JUMP_CM) {
+        if (rejectingSince == 0) rejectingSince = now;
+        if (now - rejectingSince < REJECT_TIMEOUT_MS) {
+          DEBUG_PRINTLN("Sensor: outlier %.1f cm (median %.1f)", cm, filtered);
+          continue;
+        }
+        DEBUG_PRINTLN("Sensor: level moved to %.1f cm, restarting median", cm);
+        count = next = 0;
+      }
+      rejectingSince = 0;
+
+      samples[next] = cm;
+      next = (next + 1) % MEDIAN_WINDOW;
+      if (count < MEDIAN_WINDOW) count++;
+      filtered = median(samples, count);
       fresh = true;
+      DEBUG_PRINTLN("Sensor: raw %.1f cm, median %.1f", cm, filtered);
     }
 
     uint32_t now = millis();
     if (now - lastPost >= POST_INTERVAL_MS) {
-      bool timedOut = now - lastValid >= TIMEOUT_MS;
-      if (timedOut) {
-        count = next = rejects = 0;  // stale samples must not outvote the first ones after recovery
+      if (now - lastValid >= TIMEOUT_MS) {
+        count = next = rejectingSince = 0;  // stale samples must not outvote the first ones after recovery
+        filtered = NAN;
         Event e = { EventType::Distance, NAN };
         xQueueSend(_events, &e, 0);
       } else if (fresh) {
+        Event e = { EventType::Distance, filtered };
+        xQueueSend(_events, &e, 0);
         fresh = false;
-        // Gate before the median so a long burst can't fill the window and become the median
-        float ref = count >= 3 ? median(samples, count) : NAN;
-        bool outlier = !isnan(ref) && fabsf(distanceCm - ref) > MAX_JUMP_CM;
-        if (outlier && ++rejects >= MAX_REJECTS) {
-          DEBUG_PRINTLN("Sensor: level moved to %.1f cm, restarting median", distanceCm);
-          count = next = 0;
-          outlier = false;
-        }
-        if (outlier) {
-          DEBUG_PRINTLN("Sensor: outlier %.1f cm (median %.1f)", distanceCm, ref);
-        } else {
-          rejects = 0;
-          samples[next] = distanceCm;
-          next = (next + 1) % MEDIAN_WINDOW;
-          if (count < MEDIAN_WINDOW) count++;
-          Event e = { EventType::Distance, median(samples, count) };
-          xQueueSend(_events, &e, 0);
-        }
       }
       lastPost = now;
     }
