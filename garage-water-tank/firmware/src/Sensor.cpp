@@ -8,10 +8,8 @@
 #define MIN_VALID_MM        30       // below this the sensor is in its dead zone
 #define POST_INTERVAL_MS    500
 #define TIMEOUT_MS          10000
-#define MEDIAN_WINDOW       7        // frames (100-500 ms each in processed mode): rejects bursts up to 3
-#define MAX_JUMP_CM         10       // a real level never moves this much between two frames
+#define MEDIAN_WINDOW       11       // frames (100-500 ms each in processed mode): rejects bursts up to 5
 #define MIN_SAMPLES         3        // the median needs this many to outvote one bad frame
-#define REJECT_TIMEOUT_MS   10000    // "outliers" this long mean the level really moved
 
 Sensor::Sensor(HardwareSerial &serial, uint8_t rxPin, uint8_t txPin)
   : _serial(serial), _rxPin(rxPin), _txPin(txPin), _events(NULL) {}
@@ -50,7 +48,6 @@ void Sensor::runTask() {
   bool fresh = false;
   float samples[MEDIAN_WINDOW];
   uint8_t count = 0, next = 0;
-  uint32_t rejectingSince = 0;
 
   for (;;) {
     while (_serial.available()) {
@@ -71,20 +68,7 @@ void Sensor::runTask() {
         continue;
       }
       float cm = mm / 10.0f;
-      uint32_t now = millis();
-      lastValid = now;
-
-      // Gate before the median so a long burst can't fill the window and become the median
-      if (count >= MIN_SAMPLES && fabsf(cm - filtered) > MAX_JUMP_CM) {
-        if (rejectingSince == 0) rejectingSince = now;
-        if (now - rejectingSince < REJECT_TIMEOUT_MS) {
-          DEBUG_PRINTLN("Sensor: outlier %.1f cm (median %.1f)", cm, filtered);
-          continue;
-        }
-        DEBUG_PRINTLN("Sensor: level moved to %.1f cm, restarting median", cm);
-        count = next = 0;
-      }
-      rejectingSince = 0;
+      lastValid = millis();
 
       samples[next] = cm;
       next = (next + 1) % MEDIAN_WINDOW;
@@ -97,8 +81,7 @@ void Sensor::runTask() {
     uint32_t now = millis();
     if (now - lastPost >= POST_INTERVAL_MS) {
       if (now - lastValid >= TIMEOUT_MS) {
-        count = next = rejectingSince = 0;  // stale samples must not outvote the first ones after recovery
-        filtered = NAN;
+        count = next = 0;  // stale samples must not outvote the first ones after recovery
         Event e = { EventType::Distance, NAN };
         xQueueSend(_events, &e, 0);
       } else if (fresh && count >= MIN_SAMPLES) {  // a lone first frame could be a spike
