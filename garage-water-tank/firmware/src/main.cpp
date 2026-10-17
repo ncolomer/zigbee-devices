@@ -85,8 +85,8 @@ void loadSettings() {
   savedMarkPct = markPct;
 }
 
-/* Button: the ISR acts on press (no RC on board, hence the debounce); loop() watches the
-   hold and the release, which only matters for the network reset */
+/* Button: the ISR acts on press and tracks the release (no RC on board, hence the debounce);
+   loop() watches the hold, and catches a release whose edge fell inside the debounce window */
 
 volatile bool buttonDown = false;
 volatile uint32_t pressedAt = 0;
@@ -95,8 +95,14 @@ volatile uint32_t releasedAt = 0;
 
 void IRAM_ATTR onButton() {
   uint32_t now = millis();
+  if (gpio_get_level((gpio_num_t)BUTTON_PIN) != 0) {
+    if (buttonDown && now - pressedAt >= DEBOUNCE_MS) {
+      buttonDown = false;
+      releasedAt = now;
+    }
+    return;
+  }
   if (buttonDown || now - releasedAt < DEBOUNCE_MS) return;  // contact bounce
-  if (gpio_get_level((gpio_num_t)BUTTON_PIN) != 0) return;
   buttonDown = true;
   pressedAt = now;
 
@@ -112,13 +118,13 @@ void refreshDisplay();
 void wakeDisplay();
 
 void checkButton() {
-  if (!buttonDown) return;
   uint32_t now = millis();
-  if (now - pressedAt < DEBOUNCE_MS) return;
-
-  if (digitalRead(BUTTON_PIN) == HIGH) {
+  if (buttonDown && now - pressedAt >= DEBOUNCE_MS && digitalRead(BUTTON_PIN) == HIGH) {
     releasedAt = now;
     buttonDown = false;
+  }
+
+  if (!buttonDown) {
     if (!resetArmed) return;
     // Only the Zigbee storage is erased; distances and mark stay in the app NVS namespace
     DEBUG_PRINTLN("button: released after long hold, leaving Zigbee network");
@@ -332,7 +338,7 @@ void setup() {
   wakeDisplay();
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), onButton, FALLING);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), onButton, CHANGE);
 
   sensor.begin(events);
   setupZigbee();
