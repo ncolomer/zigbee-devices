@@ -9,17 +9,25 @@ Mains-powered Zigbee water tank level monitor. An A02YYUW ultrasonic sensor meas
 | Button | D0 (GPIO0) | Internal pull-up |
 | OLED SDA / SCL | D4 / D5 (GPIO22 / 23) | SSD1306 128x32, I2C 0x3C |
 | Sensor RX / TX | D7 / D6 (GPIO17 / 16) | A02YYUW, 9600 baud, TX idles high (filtered output mode) |
-| Activity LED | LED_BUILTIN | Blinks on button press and on config writes |
+| Activity LED | LED_BUILTIN | See [Button](#button); also 1 blink on config writes, slow blink while pairing, 5 fast blinks on join |
 
 ## Behavior
 
 - **Level** = `(max - distance) / (max - min) * 100`, clamped to 0-100. `min` is the distance when the tank is full, `max` when it is empty.
-- **Distance** is the median of the last 7 sensor frames, so short echo bursts are dropped. Frames more than 10 cm off the median are discarded before entering it, unless they persist for 10 s (the level really moved).
-- **Pairing**: until the device has joined, a small wifi icon blinks (1 s) on top of the meter view; it starts hidden, so a quick join never shows it.
-- **Display** turns on at boot, on button press, then off after 30 s. A press also sends an immediate level and distance report. It shows the level as a bar and `%`, or `?` while the level is unknown (distances not configured, or sensor silent for 10 s).
-- **High-water mark**: a 2 px line above the bar at the highest level seen (kept in NVS). It disappears when the level reaches it. A double click resets it to the current level.
-- **Network reset**: after 5 s held, the wifi icon shows and the LED blinks 3 times; releasing then leaves the Zigbee network and reboots into pairing mode. Distances and mark are kept.
+- **Distance** is the median of the last 7 sensor frames, so short echo bursts are dropped. Frames more than 10 cm off the median are discarded before entering it, unless they persist for 10 s (the level really moved). Nothing is reported until 3 frames are in, after boot or a sensor timeout.
+- **Pairing**: until the device has joined, a small wifi icon blinks (1 s) on top of the meter view; it starts hidden, so a quick join never shows it. The icon also shows, steady, while a network reset is armed.
+- **Display** turns on at boot and on button press, then off after 30 s. It shows the level as a bar and `%`, or `?` while the level is unknown (distances not configured, or sensor silent for 10 s).
+- **High-water mark**: a 2 px line above the bar at the highest level seen (kept in NVS). It disappears when the level reaches it.
 - **Zigbee** (end device): level and distance are reported on a 1 % / 1 cm change, at most every 60 s and at least every hour.
+
+## Button
+
+| Gesture | Effect |
+|---------|--------|
+| Press | 1 LED blink, display on, immediate level and distance report (acts on press, not release) |
+| Double click (< 400 ms) | 2 LED blinks, high-water mark reset to the current level |
+| Hold 5 s | 3 LED blinks and the wifi icon: a network reset is armed |
+| Release after that | Leaves the Zigbee network and reboots into pairing mode; distances and mark are kept |
 
 ## Zigbee2MQTT
 
