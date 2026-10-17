@@ -35,9 +35,12 @@ void Display::setOn(bool on) {
   _oled.ssd1306_command(on ? SSD1306_DISPLAYON : SSD1306_DISPLAYOFF);
 }
 
-// INVERSE keeps it readable over the level bar
+// Black patch with 1 px padding around the drawn rows (2-14), so the icon looks the same over the bar
 void Display::drawPairingIcon() {
-  _oled.drawBitmap((_oled.width() - ICON_SIZE) / 2, 3, WIFI_ICON, ICON_SIZE, ICON_SIZE, SSD1306_INVERSE);
+  const int16_t x = (_oled.width() - ICON_SIZE) / 2;
+  const int16_t y = 3;
+  _oled.fillRect(x - 1, y + 1, ICON_SIZE + 2, 15, SSD1306_BLACK);
+  _oled.drawBitmap(x, y, WIFI_ICON, ICON_SIZE, ICON_SIZE, SSD1306_WHITE);
 }
 
 void Display::showUnknown(bool pairingIcon) {
