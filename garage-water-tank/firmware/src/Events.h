@@ -5,8 +5,8 @@
 
 // Everything that can wake the main loop; loop() is the only consumer.
 enum class EventType : uint8_t {
-  ButtonShort,
-  ButtonLong,
+  ButtonPress,
+  ButtonDouble,
   Distance,   // value = cm, NaN on sensor timeout
   MinChanged, // value = cm, written from Zigbee
   MaxChanged

@@ -29,7 +29,8 @@
 /* Configuration */
 #define DISPLAY_ON_MS           30000
 #define DEBOUNCE_MS             50
-#define LONG_PRESS_MS           2000
+#define DOUBLE_CLICK_MS         400
+#define RESET_PRESS_MS          5000
 #define BLINK_MS                100
 #define PAIRING_BLINK_MS        1000
 #define REPORT_MIN_S            60
@@ -65,6 +66,7 @@ bool pairingIconOn = false;
 uint32_t pairingPhaseAt = 0;
 bool firstPairing = false;
 bool joined = false;
+bool resetArmed = false;
 
 /* Persistence */
 
@@ -83,40 +85,61 @@ void loadSettings() {
   savedMarkPct = markPct;
 }
 
-/* Button: the ISR handles short presses on release; loop() fires the long press while still held */
+/* Button: the ISR acts on press and tracks the release (no RC on board, hence the debounce);
+   loop() watches the hold, and catches a release whose edge fell inside the debounce window */
 
+volatile bool buttonDown = false;
 volatile uint32_t pressedAt = 0;
-volatile bool longFired = false;
+volatile uint32_t lastPressAt = 0;
+volatile uint32_t releasedAt = 0;
 
 void IRAM_ATTR onButton() {
   uint32_t now = millis();
-  if (gpio_get_level((gpio_num_t)BUTTON_PIN) == 0) {
-    pressedAt = now;
-    longFired = false;
+  if (gpio_get_level((gpio_num_t)BUTTON_PIN) != 0) {
+    if (buttonDown && now - pressedAt >= DEBOUNCE_MS) {
+      buttonDown = false;
+      releasedAt = now;
+    }
     return;
   }
-  if (pressedAt == 0) return;  // released without a recorded press (held at boot)
-  uint32_t held = now - pressedAt;
-  pressedAt = 0;
-  if (longFired) {  // already handled; this release must not count as a short press
-    longFired = false;
-    return;
-  }
-  if (held < DEBOUNCE_MS) return;  // contact bounce
+  if (buttonDown || now - releasedAt < DEBOUNCE_MS) return;  // contact bounce
+  buttonDown = true;
+  pressedAt = now;
 
-  Event e = { EventType::ButtonShort, 0 };
+  bool second = lastPressAt != 0 && now - lastPressAt < DOUBLE_CLICK_MS;
+  lastPressAt = second ? 0 : now;  // a third press starts a new click, not another double
+  Event e = { second ? EventType::ButtonDouble : EventType::ButtonPress, 0 };
   BaseType_t woken = pdFALSE;
   xQueueSendFromISR(events, &e, &woken);
   if (woken) portYIELD_FROM_ISR();
 }
 
-void handleEvent(const Event &e);
+void refreshDisplay();
+void wakeDisplay();
 
-void checkLongPress() {
-  uint32_t since = pressedAt;
-  if (since == 0 || longFired || millis() - since < LONG_PRESS_MS) return;
-  longFired = true;
-  handleEvent({ EventType::ButtonLong, 0 });
+void checkButton() {
+  uint32_t now = millis();
+  if (buttonDown && now - pressedAt >= DEBOUNCE_MS && digitalRead(BUTTON_PIN) == HIGH) {
+    releasedAt = now;
+    buttonDown = false;
+  }
+
+  if (!buttonDown) {
+    if (!resetArmed) return;
+    // Only the Zigbee storage is erased; distances and mark stay in the app NVS namespace
+    DEBUG_PRINTLN("button: released after long hold, leaving Zigbee network");
+    statusLed.stopAndWait();  // let the cue blink finish before the reboot
+    DEBUG_END();
+    Zigbee.factoryReset();
+    return;
+  }
+
+  if (!resetArmed && now - pressedAt >= RESET_PRESS_MS) {
+    DEBUG_PRINTLN("button: held 5 s, network reset on release");
+    resetArmed = true;
+    statusLed.blink(200, 0.5, 3);
+    wakeDisplay();
+  }
 }
 
 /* Zigbee writes arrive on the Zigbee task; forward them instead of touching I2C/NVS here */
@@ -138,7 +161,7 @@ bool differs(float a, float b) {
 
 void refreshDisplay() {
   if (!displayOn) return;
-  bool icon = pairing && pairingIconOn;
+  bool icon = resetArmed || (pairing && pairingIconOn);
   if (isnan(levelPct)) display.showUnknown(icon);
   else display.showLevel(levelPct, markPct, icon);
 }
@@ -209,14 +232,18 @@ void handleEvent(const Event &e) {
       statusLed.blink(BLINK_MS, 1.0, 1);
       recompute();
       break;
-    case EventType::ButtonShort:
-      DEBUG_PRINTLN("button: short press");
+    case EventType::ButtonPress:
+      DEBUG_PRINTLN("button: press");
       statusLed.blink(BLINK_MS, 1.0, 1);
       wakeDisplay();
+      if (joined) {  // lets the coordinator side be checked against the display on demand
+        zbLevel.reportAnalogInput();
+        zbDistance.reportAnalogInput();
+      }
       break;
-    case EventType::ButtonLong:
-      DEBUG_PRINTLN("button: long press, high-water mark reset");
-      statusLed.blink(BLINK_MS, 1.0, 1);
+    case EventType::ButtonDouble:
+      DEBUG_PRINTLN("button: double click, high-water mark reset");
+      statusLed.blink(BLINK_MS * 2, 0.5, 2);
       markPct = levelPct;
       saveFloat("mark_pct", markPct);
       savedMarkPct = markPct;
@@ -332,6 +359,6 @@ void loop() {
     refreshDisplay();
   }
 
-  checkLongPress();
+  checkButton();
   checkJoined();
 }

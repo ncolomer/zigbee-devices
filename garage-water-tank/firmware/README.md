@@ -9,15 +9,25 @@ Mains-powered Zigbee water tank level monitor. An A02YYUW ultrasonic sensor meas
 | Button | D0 (GPIO0) | Internal pull-up |
 | OLED SDA / SCL | D4 / D5 (GPIO22 / 23) | SSD1306 128x32, I2C 0x3C |
 | Sensor RX / TX | D7 / D6 (GPIO17 / 16) | A02YYUW, 9600 baud, TX idles high (filtered output mode) |
-| Activity LED | LED_BUILTIN | Blinks on button press and on config writes |
+| Activity LED | LED_BUILTIN | See [Button](#button); also 1 blink on config writes, slow blink while pairing, 5 fast blinks on join |
 
 ## Behavior
 
 - **Level** = `(max - distance) / (max - min) * 100`, clamped to 0-100. `min` is the distance when the tank is full, `max` when it is empty.
-- **Pairing**: until the device has joined, a small wifi icon blinks (1 s) on top of the meter view; it starts hidden, so a quick join never shows it.
-- **Display** turns on at boot, on button press, then off after 30 s. It shows the level as a bar and `%`, or `?` while the level is unknown (distances not configured, or sensor silent for 10 s).
-- **High-water mark**: a 1 px line above the bar at the highest level seen (kept in NVS). It disappears when the level reaches it. Holding the button for 2 s resets it to the current level (fires without releasing).
+- **Distance** is the median of the last 11 sensor frames, so echo bursts of up to 5 frames are dropped. Nothing is reported until 3 frames are in, after boot or a sensor timeout.
+- **Pairing**: until the device has joined, a small wifi icon blinks (1 s) on top of the meter view; it starts hidden, so a quick join never shows it. The icon also shows, steady, while a network reset is armed.
+- **Display** turns on at boot and on button press, then off after 30 s. It shows the level as a bar and `%`, or `?` while the level is unknown (distances not configured, or sensor silent for 10 s).
+- **High-water mark**: a 2 px line above the bar at the highest level seen (kept in NVS). It disappears when the level reaches it.
 - **Zigbee** (end device): level and distance are reported on a 1 % / 1 cm change, at most every 60 s and at least every hour.
+
+## Button
+
+| Gesture | Effect |
+|---------|--------|
+| Press | 1 LED blink, display on, immediate level and distance report (acts on press, not release) |
+| Double click (< 400 ms) | 2 LED blinks, high-water mark reset to the current level |
+| Hold 5 s | 3 LED blinks and the wifi icon: a network reset is armed |
+| Release after that | Leaves the Zigbee network and reboots into pairing mode; distances and mark are kept |
 
 ## Zigbee2MQTT
 
@@ -51,5 +61,5 @@ pio run -e debug -t upload
 ## Troubleshooting
 
 - **Display shows `?`**: distances not set, or no valid sensor frame for 10 s (check the J2 wiring).
-- **Re-pair**: `pio run -t erase`, then flash again (no factory-reset gesture yet).
+- **Re-pair**: hold the button until the wifi icon shows (5 s), then release.
 - OTA is not supported yet.

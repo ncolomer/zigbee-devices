@@ -70,8 +70,9 @@ void StatusLed::stopAndWait(uint32_t timeoutMs) {
   LedCommand cmd;
   cmd.type = LedCommandType::STOP;
 
-  // Send command, overwrite if queue is full (non-blocking)
-  xQueueOverwrite(_commandQueue, &cmd);
+  // Queue after any pending command instead of overwriting it, so a blink() issued
+  // just before still plays and is waited for
+  if (xQueueSend(_commandQueue, &cmd, pdMS_TO_TICKS(timeoutMs)) != pdTRUE) return;
 
   // Wait for task to finish
   xSemaphoreTake(_stopSemaphore, pdMS_TO_TICKS(timeoutMs));
