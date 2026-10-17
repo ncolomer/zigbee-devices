@@ -101,7 +101,7 @@ void Sensor::runTask() {
         filtered = NAN;
         Event e = { EventType::Distance, NAN };
         xQueueSend(_events, &e, 0);
-      } else if (fresh) {
+      } else if (fresh && count >= MIN_SAMPLES) {  // a lone first frame could be a spike
         Event e = { EventType::Distance, filtered };
         xQueueSend(_events, &e, 0);
         fresh = false;
