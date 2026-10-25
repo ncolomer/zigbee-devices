@@ -18,7 +18,7 @@ Mains-powered Zigbee water tank level monitor. An A02YYUW ultrasonic sensor meas
 - **Pairing**: until the device has joined, a small wifi icon blinks (1 s) on top of the meter view; it starts hidden, so a quick join never shows it. The icon also shows, steady, while a network reset is armed.
 - **Display** turns on at boot and on button press, then off after 30 s. It shows the level as a bar and `%`, or `?` while the level is unknown (distances not configured, or sensor silent for 10 s).
 - **High-water mark**: a 2 px line above the bar at the highest level seen (kept in NVS). It disappears when the level reaches it.
-- **Zigbee** (end device): level and distance are reported on a 1 % / 1 cm change, at most every 60 s and at least every hour.
+- **Zigbee** (router, so it relays for other garage devices and reroutes on its own if a neighbour drops): level and distance are reported on a 1 % / 1 cm change, at most every 60 s and at least every hour.
 
 ## Button
 

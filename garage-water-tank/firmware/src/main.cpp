@@ -1,5 +1,5 @@
-#ifndef ZIGBEE_MODE_ED
-  #error "Zigbee end device mode is not selected"
+#ifndef ZIGBEE_MODE_ZCZR
+  #error "Zigbee coordinator/router device mode is not selected"
 #endif
 
 #include "Zigbee.h"
@@ -286,8 +286,8 @@ void setupZigbee() {
   pairingIconOn = false;
   pairingPhaseAt = millis();
 
-  esp_zb_cfg_t zigbeeConfig = ZIGBEE_DEFAULT_ED_CONFIG();
-  if (!Zigbee.begin(&zigbeeConfig, false)) {
+  // Router rather than end device: an end device that loses its parent never rejoins on this stack
+  if (!Zigbee.begin(ZIGBEE_ROUTER)) {
     DEBUG_PRINTLN("Zigbee failed to start! Rebooting...");
     DEBUG_END();
     ESP.restart();
