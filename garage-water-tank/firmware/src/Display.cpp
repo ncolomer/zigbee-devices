@@ -43,12 +43,12 @@ void Display::drawPairingIcon() {
   _oled.drawBitmap(x, y, WIFI_ICON, ICON_SIZE, ICON_SIZE, SSD1306_WHITE);
 }
 
-void Display::showUnknown(bool pairingIcon) {
+void Display::showUnknown(char symbol, bool pairingIcon) {
   if (!_present) return;
   _oled.clearDisplay();
   _oled.drawRect(0, 0, _oled.width(), _oled.height(), SSD1306_WHITE);
   _oled.setCursor(14, _oled.height() / 2);
-  _oled.print("?");
+  _oled.print(symbol);
   if (pairingIcon) drawPairingIcon();
   _oled.display();
 }

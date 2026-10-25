@@ -10,8 +10,8 @@ public:
   Display();
   bool begin();
   void setOn(bool on);
-  // pairingIcon: small wifi icon on top of the view
-  void showUnknown(bool pairingIcon);
+  // symbol: why the level is unknown ('?', '!' or 'x'); pairingIcon: small wifi icon on top of the view
+  void showUnknown(char symbol, bool pairingIcon);
   // markPct: high-water mark, NaN for none
   void showLevel(float pct, float markPct, bool pairingIcon);
 
