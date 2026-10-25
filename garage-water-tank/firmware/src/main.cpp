@@ -67,6 +67,7 @@ uint32_t pairingPhaseAt = 0;
 bool firstPairing = false;
 bool joined = false;
 bool resetArmed = false;
+bool sensorFailed = false;  // last sensor event was the 10 s timeout, not boot
 
 /* Persistence */
 
@@ -159,10 +160,21 @@ bool differs(float a, float b) {
   return fabsf(a - b) >= 0.05f;
 }
 
+bool configured() {
+  return !isnan(minCm) && !isnan(maxCm) && maxCm > minCm;
+}
+
+// Why the level is unknown: sensor silent first, since the distances can't be checked without it
+char unknownSymbol() {
+  if (sensorFailed) return 'x';
+  if (!configured()) return '!';
+  return '?';  // waiting for the first frames after boot
+}
+
 void refreshDisplay() {
   if (!displayOn) return;
   bool icon = resetArmed || (pairing && pairingIconOn);
-  if (isnan(levelPct)) display.showUnknown(icon);
+  if (isnan(levelPct)) display.showUnknown(unknownSymbol(), icon);
   else display.showLevel(levelPct, markPct, icon);
 }
 
@@ -191,7 +203,7 @@ void publish() {
 
 void recompute() {
   float level = NAN;
-  if (!isnan(distanceCm) && !isnan(minCm) && !isnan(maxCm) && maxCm > minCm) {
+  if (!isnan(distanceCm) && configured()) {
     level = constrain((maxCm - distanceCm) / (maxCm - minCm) * 100.0f, 0.0f, 100.0f);
   }
 
@@ -205,7 +217,8 @@ void recompute() {
 
   bool levelChanged = differs(level, levelPct);
   levelPct = level;
-  if (levelChanged) refreshDisplay();
+  // While unknown, the symbol can change with the level still NaN (boot -> sensor timeout, distances set)
+  if (levelChanged || isnan(level)) refreshDisplay();
   publish();
   DEBUG_PRINTLN("distance=%.1f cm level=%.1f%% mark=%.1f%%", distanceCm, levelPct, markPct);
 }
@@ -214,6 +227,7 @@ void handleEvent(const Event &e) {
   switch (e.type) {
     case EventType::Distance:
       distanceCm = e.value;
+      sensorFailed = isnan(e.value);  // the sensor task only posts NaN on its timeout
       recompute();
       break;
     case EventType::MinChanged:
