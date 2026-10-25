@@ -13,28 +13,40 @@
 #define ZIGBEE_MODEL            "GarageDoors"
 
 /* GPIO definitions — Grove Base headers, active-low relay */
-#define RELAY_PIN_1   D1
-#define RELAY_PIN_2   D2
-#define RELAY_PIN_3   D4
-#define RELAY_PIN_4   D6
+#define RELAY_PIN_1             D1
+#define RELAY_PIN_2             D2
+#define RELAY_PIN_3             D4
+#define RELAY_PIN_4             D6
+#define LED_PIN                 LED_BUILTIN
+#define RESET_PIN               BOOT_PIN      // XIAO BOOT button, GPIO9
 
-#define LED_PIN       LED_BUILTIN
+/* Configuration */
+#define CHANNELS                4
+#define DEFAULT_PULSE_MS        250
+#define DEFAULT_SWITCH_TYPE     0             // toggle
+#define DEFAULT_SWITCH_ACTIONS  0             // active_high
+#define FACTORY_RESET_MS        3000
 
 StatusLed statusLed(LED_PIN);
 Preferences nvs;
 
-ZigbeeRelaySwitch zbSwitch1(1, RELAY_PIN_1);
-ZigbeeRelaySwitch zbSwitch2(2, RELAY_PIN_2);
-ZigbeeRelaySwitch zbSwitch3(3, RELAY_PIN_3);
-ZigbeeRelaySwitch zbSwitch4(4, RELAY_PIN_4);
+// Endpoint N drives relay N
+ZigbeeRelaySwitch zbSwitches[CHANNELS] = {
+  ZigbeeRelaySwitch(1, RELAY_PIN_1), ZigbeeRelaySwitch(2, RELAY_PIN_2),
+  ZigbeeRelaySwitch(3, RELAY_PIN_3), ZigbeeRelaySwitch(4, RELAY_PIN_4),
+};
 
-ZigbeeRelaySwitch *switches[] = { &zbSwitch1, &zbSwitch2, &zbSwitch3, &zbSwitch4 };
+bool firstPairing = false;
+bool joined = false;
+uint32_t resetPressedAt = 0;
+
+/* Persistence */
 
 uint16_t loadPulseDuration(uint8_t index) {
   char key[16];
   snprintf(key, sizeof(key), "pulse_ms_%d", index);
-  nvs.begin("garage-doors", false);
-  uint16_t ms = nvs.getUShort(key, 250); // default: 250ms
+  nvs.begin("garage-doors", false);  // read-only fails while the namespace doesn't exist yet
+  uint16_t ms = nvs.getUShort(key, DEFAULT_PULSE_MS);
   nvs.end();
   return ms;
 }
@@ -52,7 +64,7 @@ uint8_t loadSwitchType(uint8_t index) {
   char key[16];
   snprintf(key, sizeof(key), "sw_type_%d", index);
   nvs.begin("garage-doors", false);
-  uint8_t val = nvs.getUChar(key, 0);  // default: toggle
+  uint8_t val = nvs.getUChar(key, DEFAULT_SWITCH_TYPE);
   nvs.end();
   return val;
 }
@@ -70,7 +82,7 @@ uint8_t loadSwitchActions(uint8_t index) {
   char key[16];
   snprintf(key, sizeof(key), "sw_act_%d", index);
   nvs.begin("garage-doors", false);
-  uint8_t val = nvs.getUChar(key, 0);  // default: active_high
+  uint8_t val = nvs.getUChar(key, DEFAULT_SWITCH_ACTIONS);
   nvs.end();
   return val;
 }
@@ -84,7 +96,35 @@ void saveSwitchActions(uint8_t index, uint8_t val) {
   DEBUG_PRINTLN("Switch %d: switchActions set to %u", index, val);
 }
 
-void connectZigbee() {
+/* Application */
+
+void setupSwitches() {
+  for (uint8_t i = 0; i < CHANNELS; i++) {
+    ZigbeeRelaySwitch &sw = zbSwitches[i];
+    uint8_t index = i + 1;
+    uint16_t pulseDuration = loadPulseDuration(index);
+    uint8_t switchType    = loadSwitchType(index);
+    uint8_t switchActions = loadSwitchActions(index);
+
+    sw.setManufacturerAndModel(ZIGBEE_MANUFACTURER, ZIGBEE_MODEL);
+    sw.setPowerSource(ZB_POWER_SOURCE_MAINS);
+    sw.allowMultipleBinding(true);
+    sw.setManualBinding(true);
+    sw.setDefaultPulseDuration(pulseDuration);
+    sw.setDefaultSwitchType(switchType);
+    sw.setDefaultSwitchActions(switchActions);
+
+    sw.onPulseDurationChanged([index](uint16_t ms) { savePulseDuration(index, ms); });
+    sw.onSwitchTypeChanged([index](uint8_t val) { saveSwitchType(index, val); });
+    sw.onSwitchActionsChanged([index](uint8_t val) { saveSwitchActions(index, val); });
+
+    sw.begin();  // drives the relay pin to its idle level
+    Zigbee.addEndpoint(&sw);
+    DEBUG_PRINTLN("Switch %d: pulse=%u ms type=%u actions=%u", index, pulseDuration, switchType, switchActions);
+  }
+}
+
+void setupZigbee() {
   // Router rather than end device: an end device that loses its parent never rejoins on this stack
   if (!Zigbee.begin(ZIGBEE_ROUTER)) {
     DEBUG_PRINTLN("Zigbee failed to start! Rebooting...");
@@ -92,21 +132,16 @@ void connectZigbee() {
     ESP.restart();
   }
 
-  bool is_first_pairing = esp_zb_bdb_is_factory_new();
-  if (is_first_pairing) statusLed.blink(2000, 0.5);
+  // Joining happens in the background so the reset button keeps working
+  firstPairing = esp_zb_bdb_is_factory_new();
+  if (firstPairing) statusLed.blink(2000, 0.5);
+}
 
-  DEBUG_PRINT("Connecting to Zigbee network ");
-  uint32_t last_second = 0;
-  while (!Zigbee.connected()) {
-    uint32_t current_second = millis() / 1000;
-    if (current_second != last_second) {
-      DEBUG_PRINT(".");
-      last_second = current_second;
-    }
-    delay(50);
-  }
+void checkJoined() {
+  if (joined || !Zigbee.connected()) return;
+  joined = true;
 
-  if (is_first_pairing) {
+  if (firstPairing) {
     DEBUG_PRINTLN("joined network!");
     statusLed.blink(250, 0.2, 5);
   } else {
@@ -114,43 +149,31 @@ void connectZigbee() {
   }
 }
 
+void checkFactoryReset() {
+  if (digitalRead(RESET_PIN) == HIGH) {
+    resetPressedAt = 0;
+    return;
+  }
+  if (resetPressedAt == 0) resetPressedAt = millis();
+  if (millis() - resetPressedAt >= FACTORY_RESET_MS) {
+    DEBUG_PRINTLN("factory reset");
+    statusLed.blink(250, 0.5, 5);
+    Zigbee.factoryReset();
+  }
+}
+
 void setup() {
   DEBUG_INIT();
   DEBUG_PRINTLN("=== %s %s ===", ZIGBEE_MANUFACTURER, ZIGBEE_MODEL);
 
-  for (uint8_t i = 0; i < 4; i++) {
-    uint8_t index = i + 1;
-    uint16_t pulseDuration = loadPulseDuration(index);
-    uint8_t switchType    = loadSwitchType(index);
-    uint8_t switchActions = loadSwitchActions(index);
+  pinMode(RESET_PIN, INPUT_PULLUP);
 
-    switches[i]->setManufacturerAndModel(ZIGBEE_MANUFACTURER, ZIGBEE_MODEL);
-    switches[i]->setPowerSource(ZB_POWER_SOURCE_MAINS);
-    switches[i]->allowMultipleBinding(true);
-    switches[i]->setManualBinding(true);
-    switches[i]->setDefaultPulseDuration(pulseDuration);
-    switches[i]->setDefaultSwitchType(switchType);
-    switches[i]->setDefaultSwitchActions(switchActions);
-
-    switches[i]->onPulseDurationChanged([index](uint16_t ms) {
-      savePulseDuration(index, ms);
-    });
-    switches[i]->onSwitchTypeChanged([index](uint8_t val) {
-      saveSwitchType(index, val);
-    });
-    switches[i]->onSwitchActionsChanged([index](uint8_t val) {
-      saveSwitchActions(index, val);
-    });
-
-    switches[i]->begin();
-
-    Zigbee.addEndpoint(switches[i]);
-    DEBUG_PRINTLN("Switch %d: pulse=%u ms type=%u actions=%u", index, pulseDuration, switchType, switchActions);
-  }
-
-  connectZigbee();
+  setupSwitches();
+  setupZigbee();
 }
 
 void loop() {
-  delay(1000);
+  checkFactoryReset();
+  checkJoined();
+  delay(100);
 }
