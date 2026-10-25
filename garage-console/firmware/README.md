@@ -23,7 +23,7 @@ Endpoint N is connector JN. Each channel has a `switch_type`, kept in NVS (defau
 
 LED: slow blink while pairing, 5 quick blinks once joined, short blink on every command sent. Inputs are sampled on the expander interrupt plus a 1 s poll, with a 30 ms debounce.
 
-End device with the receiver always on (mains-powered), so bindings and config writes apply immediately.
+Router (mains-powered): the receiver is always on, so bindings and config writes apply immediately, and it relays for other garage devices and reroutes on its own if a neighbour drops.
 
 ## Zigbee2MQTT
 
