@@ -22,7 +22,7 @@ Each channel has three settings, kept in NVS and written from Zigbee2MQTT:
 
 In toggle mode the relay state is not persisted: it boots idle (Off).
 
-Over Zigbee the three settings are manufacturer-specific `genOnOff` attributes (code `0x1234`): `0x0100` switch type, `0x0101` pulse duration (ms), `0x0102` switch actions. The standard `onTime` and On/Off Switch Configuration attributes are not used: the ZCL defines them for timed-off and for switch devices, and `switchType` is read-only.
+Over Zigbee the three settings are attributes of a manufacturer-specific cluster `0xFC01` on each endpoint: `0x0000` switch type, `0x0001` pulse duration (ms), `0x0002` switch actions. The standard `onTime` and On/Off Switch Configuration attributes are not used: the ZCL defines them for timed-off and for switch devices, and `switchType` is read-only.
 
 LED: slow blink while pairing, 5 quick blinks once joined.
 
