@@ -2,15 +2,22 @@
  * Zigbee2MQTT external converter for DIY Garage Doors controller (XIAO ESP32C6).
  *
  * Endpoints 1-4, genOnOff:
- * - trigger: write on_off = true to activate relay (pulse or toggle depending on switch_type)
- * - pulse_duration_ms: read/write via genOnOff onTime (0x4001), config per channel
+ * - state: activates the relay (pulse or on/off depending on switch_type)
  *
- * genOnOffSwitchCfg:
- * - switch_type: toggle (0) or momentary (1)
- * - switch_actions: active_high (0) or active_low (1)
+ * Per-channel config, manufacturer-specific genOnOff attributes (code 0x1234, ZCL §2.6.1.4):
+ * - 0x0100 switch_type: toggle (0) or momentary (1)
+ * - 0x0101 pulse_duration_ms: pulse length in ms (momentary only)
+ * - 0x0102 switch_actions: active_high (0) or active_low (1)
+ * The standard onTime/switchType/switchActions mean something else per spec, and switchType is read-only.
  */
 
+import {Zcl} from 'zigbee-herdsman';
 import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
+
+const MANUF = {manufacturerCode: 0x1234};
+const ATTR_SWITCH_TYPE = {ID: 0x0100, type: Zcl.DataType.ENUM8};
+const ATTR_PULSE_MS = {ID: 0x0101, type: Zcl.DataType.UINT16};
+const ATTR_SWITCH_ACTIONS = {ID: 0x0102, type: Zcl.DataType.ENUM8};
 
 /** @type {import('zigbee-herdsman-converters/lib/types').DefinitionWithExtend} */
 export default {
@@ -32,7 +39,8 @@ export default {
             description: 'Relay pulse duration in milliseconds (momentary mode only)',
             access: 'ALL',
             cluster: 'genOnOff',
-            attribute: 'onTime',
+            attribute: ATTR_PULSE_MS,
+            zigbeeCommandOptions: MANUF,
             unit: 'ms',
             valueMin: 10,
             valueMax: 10000,
@@ -45,8 +53,9 @@ export default {
                 name: 'switch_type',
                 description: 'Switch operating mode',
                 lookup: {toggle: 0, momentary: 1},
-                cluster: 'genOnOffSwitchCfg',
-                attribute: 'switchType',
+                cluster: 'genOnOff',
+                attribute: ATTR_SWITCH_TYPE,
+                zigbeeCommandOptions: MANUF,
             }),
             m.enumLookup({
                 endpointName: ep,
@@ -54,8 +63,9 @@ export default {
                 name: 'switch_actions',
                 description: 'Relay activation polarity',
                 lookup: {active_high: 0, active_low: 1},
-                cluster: 'genOnOffSwitchCfg',
-                attribute: 'switchActions',
+                cluster: 'genOnOff',
+                attribute: ATTR_SWITCH_ACTIONS,
+                zigbeeCommandOptions: MANUF,
             }),
         ]),
     ],

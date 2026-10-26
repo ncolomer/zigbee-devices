@@ -6,9 +6,13 @@
 #include "ZigbeeEP.h"
 #include <functional>
 
-// genOnOff onTime (0x4001) reused as pulse duration storage (ms)
-// genOnOffSwitchCfg switchType (0x0000): 0=toggle, 1=momentary
-// genOnOffSwitchCfg switchActions (0x0010): 0=active_high, 1=active_low
+// Relay settings are manufacturer-specific genOnOff attributes (ZCL §2.6.1.4): the spec reserves
+// non-standard IDs, and onTime/switchType/switchActions mean something else per spec.
+// IDs avoid the standard genOnOff ones: the stack's set-attribute callback carries no manufacturer code.
+#define ZB_RELAY_MANUF_CODE        0x1234  // the ESP stack's default, announced in the node descriptor
+#define ZB_ATTR_RELAY_SWITCH_TYPE  0x0100  // enum8: 0=toggle, 1=momentary
+#define ZB_ATTR_RELAY_PULSE_MS     0x0101  // uint16: pulse duration in ms (momentary only)
+#define ZB_ATTR_RELAY_ACTIONS      0x0102  // enum8: 0=active_high, 1=active_low
 
 class ZigbeeRelaySwitch : public ZigbeeEP {
 public:
@@ -48,7 +52,6 @@ private:
   bool _relay_state; // for toggle mode
 
   esp_zb_attribute_list_t *_on_off_cluster = nullptr;
-  esp_zb_attribute_list_t *_switch_cfg_cluster = nullptr;
 
   esp_zb_cluster_list_t *_createClusters();
   static void _pulseTask(void *arg);

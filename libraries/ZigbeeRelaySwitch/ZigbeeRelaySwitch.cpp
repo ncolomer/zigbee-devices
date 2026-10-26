@@ -10,10 +10,6 @@
 #include "esp_zigbee_type.h"
 #include "Debug.h"
 
-// genOnOffSwitchCfg attribute IDs (ZCL spec, not defined as constants in ESP SDK)
-#define ZB_ATTR_SWITCH_CFG_SWITCH_TYPE    0x0000
-#define ZB_ATTR_SWITCH_CFG_SWITCH_ACTIONS 0x0010
-
 esp_zb_cluster_list_t *ZigbeeRelaySwitch::_createClusters() {
   esp_zb_cluster_list_t *cluster_list = esp_zb_zcl_cluster_list_create();
   esp_zb_cluster_list_add_basic_cluster(cluster_list,    esp_zb_basic_cluster_create(NULL),    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
@@ -23,31 +19,23 @@ esp_zb_cluster_list_t *ZigbeeRelaySwitch::_createClusters() {
   #define ADD_ATTR(id, type, access, val) \
     esp_zb_cluster_add_attr(_on_off_cluster, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, (id), (type), (access), (val))
 
+  #define ADD_MANUF_ATTR(id, type, val) \
+    esp_zb_cluster_add_manufacturer_attr(_on_off_cluster, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, (id), ZB_RELAY_MANUF_CODE, (type), ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, (val))
+
   bool     on_off         = false;
   uint16_t pulse_duration = _pulse_duration_ms;
 
   _on_off_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_ON_OFF);
   ADD_ATTR(ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, ESP_ZB_ZCL_ATTR_TYPE_BOOL, ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, &on_off);
-  ADD_ATTR(ESP_ZB_ZCL_ATTR_ON_OFF_ON_TIME,   ESP_ZB_ZCL_ATTR_TYPE_U16,  ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, &pulse_duration);
+  ADD_MANUF_ATTR(ZB_ATTR_RELAY_SWITCH_TYPE, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, &_switch_type);
+  ADD_MANUF_ATTR(ZB_ATTR_RELAY_PULSE_MS,    ESP_ZB_ZCL_ATTR_TYPE_U16,       &pulse_duration);
+  ADD_MANUF_ATTR(ZB_ATTR_RELAY_ACTIONS,     ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, &_switch_actions);
   // clang-format on
 
   #undef ADD_ATTR
+  #undef ADD_MANUF_ATTR
 
   esp_zb_cluster_list_add_on_off_cluster(cluster_list, _on_off_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-
-  // Create genOnOffSwitchCfg cluster manually to override ZCL spec's read-only on switchType
-  // clang-format off
-  #define ADD_ATTR(id, type, access, val) \
-    esp_zb_cluster_add_attr(_switch_cfg_cluster, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG, (id), (type), (access), (val))
-
-  _switch_cfg_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG);
-  ADD_ATTR(ZB_ATTR_SWITCH_CFG_SWITCH_TYPE,    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, &_switch_type);
-  ADD_ATTR(ZB_ATTR_SWITCH_CFG_SWITCH_ACTIONS, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE, &_switch_actions);
-  // clang-format on
-
-  #undef ADD_ATTR
-
-  esp_zb_cluster_list_add_on_off_switch_config_cluster(cluster_list, _switch_cfg_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   return cluster_list;
 }
@@ -82,17 +70,17 @@ void ZigbeeRelaySwitch::begin() {
 
 void ZigbeeRelaySwitch::setDefaultPulseDuration(uint16_t pulseDurationMs) {
   _pulse_duration_ms = pulseDurationMs;
-  esp_zb_cluster_update_attr(_on_off_cluster, ESP_ZB_ZCL_ATTR_ON_OFF_ON_TIME, &pulseDurationMs);
+  esp_zb_cluster_update_attr(_on_off_cluster, ZB_ATTR_RELAY_PULSE_MS, &pulseDurationMs);
 }
 
 void ZigbeeRelaySwitch::setDefaultSwitchType(uint8_t switchType) {
   _switch_type = switchType;
-  esp_zb_cluster_update_attr(_switch_cfg_cluster, ZB_ATTR_SWITCH_CFG_SWITCH_TYPE, &switchType);
+  esp_zb_cluster_update_attr(_on_off_cluster, ZB_ATTR_RELAY_SWITCH_TYPE, &switchType);
 }
 
 void ZigbeeRelaySwitch::setDefaultSwitchActions(uint8_t switchActions) {
   _switch_actions = switchActions;
-  esp_zb_cluster_update_attr(_switch_cfg_cluster, ZB_ATTR_SWITCH_CFG_SWITCH_ACTIONS, &switchActions);
+  esp_zb_cluster_update_attr(_on_off_cluster, ZB_ATTR_RELAY_ACTIONS, &switchActions);
 }
 
 void ZigbeeRelaySwitch::setDefaultOnOff(bool state) {
@@ -149,7 +137,7 @@ void ZigbeeRelaySwitch::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t
       return;
     }
 
-    if (message->attribute.id == ESP_ZB_ZCL_ATTR_ON_OFF_ON_TIME
+    if (message->attribute.id == ZB_ATTR_RELAY_PULSE_MS
         && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
       uint16_t ms = *(uint16_t *)message->attribute.data.value;
       DEBUG_PRINTLN("ep %d: new pulse_duration_ms = %u", _endpoint, ms);
@@ -159,10 +147,8 @@ void ZigbeeRelaySwitch::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t
       }
       return;
     }
-  }
 
-  if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG) {
-    if (message->attribute.id == ZB_ATTR_SWITCH_CFG_SWITCH_TYPE
+    if (message->attribute.id == ZB_ATTR_RELAY_SWITCH_TYPE
         && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) {
       uint8_t val = *(uint8_t *)message->attribute.data.value;
       DEBUG_PRINTLN("ep %d: switchType = %u", _endpoint, val);
@@ -173,7 +159,7 @@ void ZigbeeRelaySwitch::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t
       return;
     }
 
-    if (message->attribute.id == ZB_ATTR_SWITCH_CFG_SWITCH_ACTIONS
+    if (message->attribute.id == ZB_ATTR_RELAY_ACTIONS
         && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) {
       uint8_t val = *(uint8_t *)message->attribute.data.value;
       DEBUG_PRINTLN("ep %d: switchActions = %u", _endpoint, val);
