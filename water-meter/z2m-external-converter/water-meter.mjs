@@ -2,14 +2,15 @@
  * Zigbee2MQTT external converter for DIY Zigbee Water Meter (XIAO ESP32C6).
  *
  * Endpoint 1, seMetering:
- * - water_volume: read/write currentSummDelivered (m³)
- * - liters_per_pulse: read/write 0xF001 (L), config
+ * - water_volume: cumulative volume (m³), read-only, backed by currentSummReceived (the ZigbeeWaterMeter library)
+ * Endpoint 1, meterConfig (manufacturer-specific cluster 0xFC03, ZCL §2.6.1.3):
+ * - set_volume: write-only calibration → 0x0000; firmware applies it and reports water_volume
+ * - liters_per_pulse: read/write 0x0001 (L), config
  */
 
 import {Zcl} from 'zigbee-herdsman';
 import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
 
-const ATTR_LITERS_PER_PULSE = 0xf001;
 const SE_METERING_CLUSTER_ID = 0x0702;
 const ZCL_REPORT_ATTRIBUTES_CMD = 0x0a;
 
@@ -38,14 +39,35 @@ export default {
     description: 'DIY Zigbee water meter with pulse detection',
     extend: [
         forceDefaultResponse,
+        m.deviceAddCustomCluster('meterConfig', {
+            name: 'meterConfig',
+            ID: 0xfc03,
+            attributes: {
+                setVolume: {name: 'setVolume', ID: 0x0000, type: Zcl.DataType.UINT32, write: true, max: 0xffffffff},
+                litersPerPulse: {name: 'litersPerPulse', ID: 0x0001, type: Zcl.DataType.UINT16, write: true, max: 0xffff},
+            },
+            commands: {},
+            commandsResponse: {},
+        }),
         m.battery({ percentage: false, voltage: false, lowStatus: false, percentageReporting: false }),
         m.numeric({
             name: 'water_volume',
             description: 'Cumulative water volume in m³',
-            access: 'ALL',
+            access: 'STATE_GET',
             cluster: 'seMetering',
-            attribute: 'currentSummDelivered',
+            attribute: 'currentSummReceived',
             reporting: { min: 0, max: 65000, change: 0 },
+            unit: 'm³',
+            scale: 1000,
+            precision: 3,
+        }),
+        m.numeric({
+            entityCategory: 'config',
+            name: 'set_volume',
+            description: 'Set/calibrate the cumulative water volume (m³)',
+            access: 'SET',
+            cluster: 'meterConfig',
+            attribute: 'setVolume',
             unit: 'm³',
             scale: 1000,
             precision: 3,
@@ -58,8 +80,8 @@ export default {
             name: 'liters_per_pulse',
             description: 'Calibrate liters increment per pulse',
             access: 'ALL',
-            cluster: 'seMetering',
-            attribute: { ID: ATTR_LITERS_PER_PULSE, type: Zcl.DataType.UINT16 },
+            cluster: 'meterConfig',
+            attribute: 'litersPerPulse',
             reporting: { min: 0, max: 65000, change: 0 },
             unit: 'L',
             valueMin: 1,

@@ -31,7 +31,7 @@ Selecting grid (`ON`) energizes the coil. Relay state is remembered across power
   State persists to NVS and is restored (driven to the GPIO) on boot; a fresh device
   defaults to tank.
 - **Water meters (EP2, EP3)**: each pulse adds `liters_per_pulse` to that meter's
-  cumulative volume and reports it over the SE Metering cluster (`currentSummDelivered`).
+  cumulative volume and reports it over the SE Metering cluster (`currentSummReceived`).
 - **Factory reset**: hold BOOT ≥ 3 s to leave the Zigbee network and re-pair. Meter
   totals and relay state (NVS) are preserved; a full wipe is `pio run --target erase`.
 
@@ -42,7 +42,8 @@ All configuration is done over Zigbee2MQTT after pairing:
 | Entity                     | Description                                | Default |
 |----------------------------|--------------------------------------------|---------|
 | `state_relay`              | Water source (ON = grid, OFF = tank)       | tank    |
-| `water_volume_meter1/2`    | Cumulative volume (m³, writable to calibrate) | 0    |
+| `water_volume_meter1/2`    | Cumulative volume (m³, read-only)          | 0       |
+| `set_volume_meter1/2`      | Calibrate the cumulative volume (m³)       | —       |
 | `liters_per_pulse_meter1/2`| Liters per pulse (1–1000)                  | 10      |
 
 ## Storage (NVS)
@@ -77,6 +78,6 @@ OTA app slots, so OTA can be added later without repartitioning.
 ## Libraries
 
 - `ZigbeeRelaySwitch` — genOnOff relay endpoint (toggle mode, NVS-persisted state)
-- `ZigbeeWaterMeter` — SE Metering endpoint with custom `liters_per_pulse` attribute
+- `ZigbeeWaterMeter` — SE Metering endpoint plus config cluster `0xFC03` (`set_volume`, `liters_per_pulse`)
 - `StatusLed` — async LED blink via FreeRTOS task
 - `Debug` — conditional serial logging (debug builds only)

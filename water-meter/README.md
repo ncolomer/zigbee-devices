@@ -1,6 +1,6 @@
 # Water Meter
 
-Battery-powered Zigbee pulse counter for mechanical water meters equipped with a reed switch. Counts pulses during deep sleep via EXT1 wakeup, reports cumulative volume over Zigbee using the SE Metering cluster (`currentSummDelivered`).
+Battery-powered Zigbee pulse counter for mechanical water meters equipped with a reed switch. Counts pulses during deep sleep via EXT1 wakeup, reports cumulative volume over Zigbee using the SE Metering cluster (`currentSummReceived`).
 
 ## Hardware
 
@@ -32,8 +32,11 @@ All configuration is done remotely via Zigbee2MQTT after pairing:
 
 | Entity | Description | Default |
 |--------|-------------|---------|
-| `water_volume` | Cumulative volume (m³, writable for calibration) | 0 |
+| `water_volume` | Cumulative volume (m³, read-only) | 0 |
+| `set_volume` | Calibrate the cumulative volume (m³, write-only) | — |
 | `liters_per_pulse` | Liters per reed pulse (1–1000) | 10 |
+
+`set_volume` and `liters_per_pulse` are attributes `0x0000` and `0x0001` of a manufacturer-specific cluster `0xFC03` (ZCL §2.6.1.3).
 
 ## Storage
 
@@ -54,6 +57,6 @@ External converter in `z2m-external-converter/water-meter.mjs`. Install:
 
 ## Libraries
 
-- `ZigbeeWaterMeter` — SE Metering endpoint with custom `liters_per_pulse` attribute
+- `ZigbeeWaterMeter` — SE Metering endpoint plus config cluster `0xFC03` (`set_volume`, `liters_per_pulse`)
 - `StatusLed` — async LED blink via FreeRTOS task
 - `Debug` — conditional serial logging (debug builds only)

@@ -38,13 +38,24 @@ esp_zb_cluster_list_t *ZigbeeWaterMeter::_createClusters() {
   ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_METERING_DEVICE_TYPE_ID,        ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,   ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY,                                     &device_type);
   ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID,                  ESP_ZB_ZCL_ATTR_TYPE_24BIT,     ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY,                                     &multiplier);
   ADD_ATTR(ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID,                     ESP_ZB_ZCL_ATTR_TYPE_24BIT,     ESP_ZB_ZCL_ATTR_ACCESS_READ_ONLY,                                     &divisor);
-  ADD_ATTR(ATTR_LITERS_PER_PULSE,                                   ESP_ZB_ZCL_ATTR_TYPE_U16,       ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, &liters_per_pulse);
-  ADD_ATTR(ATTR_SET_VOLUME,                                         ESP_ZB_ZCL_ATTR_TYPE_U32,       ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE,                                    &set_volume);
   // clang-format on
 
   #undef ADD_ATTR
 
   esp_zb_cluster_list_add_metering_cluster(cluster_list, _metering_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  // clang-format off
+  #define ADD_ATTR(id, type, access, val) \
+    esp_zb_custom_cluster_add_custom_attr(_config_cluster, (id), (type), (access), (val))
+
+  _config_cluster = esp_zb_zcl_attr_list_create(ZB_CLUSTER_METER_CONFIG);
+  ADD_ATTR(ATTR_SET_VOLUME,       ESP_ZB_ZCL_ATTR_TYPE_U32, ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE,                                    &set_volume);
+  ADD_ATTR(ATTR_LITERS_PER_PULSE, ESP_ZB_ZCL_ATTR_TYPE_U16, ESP_ZB_ZCL_ATTR_ACCESS_READ_WRITE | ESP_ZB_ZCL_ATTR_ACCESS_REPORTING, &liters_per_pulse);
+  // clang-format on
+
+  #undef ADD_ATTR
+
+  esp_zb_cluster_list_add_custom_cluster(cluster_list, _config_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   return cluster_list;
 }
 
@@ -65,7 +76,7 @@ void ZigbeeWaterMeter::setDefaultReadingLiters(uint32_t liters) {
 }
 
 void ZigbeeWaterMeter::setDefaultLitersPerPulse(uint16_t liters_per_pulse) {
-  esp_zb_cluster_update_attr(_metering_cluster, ATTR_LITERS_PER_PULSE, &liters_per_pulse);
+  esp_zb_cluster_update_attr(_config_cluster, ATTR_LITERS_PER_PULSE, &liters_per_pulse);
 }
 
 // No lock; call with the Zigbee lock held or from a callback.
@@ -102,7 +113,7 @@ bool ZigbeeWaterMeter::setReadingLiters(uint32_t liters, bool forceReport) {
 void ZigbeeWaterMeter::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) {
   DEBUG_PRINTLN("ep %d: zbAttributeSet cluster=0x%04x attr=0x%04x", _endpoint, message->info.cluster, message->attribute.id);
 
-  if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_METERING) {
+  if (message->info.cluster == ZB_CLUSTER_METER_CONFIG) {
     if (message->attribute.id == ATTR_SET_VOLUME
         && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_U32) {
       uint32_t liters = *(uint32_t *)message->attribute.data.value;
