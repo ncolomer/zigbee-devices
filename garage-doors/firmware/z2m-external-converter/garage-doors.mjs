@@ -14,18 +14,6 @@
 import {Zcl} from 'zigbee-herdsman';
 import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
 
-const relayConfig = m.deviceAddCustomCluster('relayConfig', {
-    name: 'relayConfig',
-    ID: 0xfc01,
-    attributes: {
-        switchType: {name: 'switchType', ID: 0x0000, type: Zcl.DataType.ENUM8, write: true, max: 0x01},
-        pulseDurationMs: {name: 'pulseDurationMs', ID: 0x0001, type: Zcl.DataType.UINT16, write: true, max: 0xffff},
-        switchActions: {name: 'switchActions', ID: 0x0002, type: Zcl.DataType.ENUM8, write: true, max: 0x01},
-    },
-    commands: {},
-    commandsResponse: {},
-});
-
 /** @type {import('zigbee-herdsman-converters/lib/types').DefinitionWithExtend} */
 export default {
     fingerprint: [{modelID: 'GarageDoors', manufacturerName: 'DIY'}],
@@ -34,7 +22,17 @@ export default {
     description: 'DIY Zigbee 4-channel garage door controller',
     extend: [
         m.deviceEndpoints({endpoints: {l1: 1, l2: 2, l3: 3, l4: 4}}),
-        relayConfig,
+        m.deviceAddCustomCluster('relayConfig', {
+            name: 'relayConfig',
+            ID: 0xfc01,
+            attributes: {
+                switchType: {name: 'switchType', ID: 0x0000, type: Zcl.DataType.ENUM8, write: true, max: 0x01},
+                pulseDurationMs: {name: 'pulseDurationMs', ID: 0x0001, type: Zcl.DataType.UINT16, write: true, max: 0xffff},
+                switchActions: {name: 'switchActions', ID: 0x0002, type: Zcl.DataType.ENUM8, write: true, max: 0x01},
+            },
+            commands: {},
+            commandsResponse: {},
+        }),
         m.onOff({
             endpointNames: ['l1', 'l2', 'l3', 'l4'],
             description: 'Activate relay (momentary pulse or toggle)',
