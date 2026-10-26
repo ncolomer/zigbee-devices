@@ -22,6 +22,8 @@ Each channel has three settings, kept in NVS and written from Zigbee2MQTT:
 
 In toggle mode the relay state is not persisted: it boots idle (Off).
 
+Over Zigbee the three settings are attributes of a manufacturer-specific cluster `0xFC01` on each endpoint: `0x0000` switch type, `0x0001` pulse duration (ms), `0x0002` switch actions. The standard `onTime` and On/Off Switch Configuration attributes are not used: the ZCL defines them for timed-off and for switch devices, and `switchType` is read-only.
+
 LED: slow blink while pairing, 5 quick blinks once joined.
 
 Router (mains-powered): the receiver is always on, so commands and config writes apply immediately, and it relays for other garage devices and reroutes on its own if a neighbour drops.
