@@ -6,8 +6,9 @@
  *
  * Endpoints 2 & 3 (meter1, meter2), seMetering:
  * - water_volume: cumulative volume (m³), read-only, backed by currentSummReceived.
- * - set_volume: write-only calibration → custom 0xF000; firmware applies it and reports water_volume.
- * - liters_per_pulse: read/write 0xF001 (L), config.
+ * - set_volume: write-only calibration → meterConfig 0x0000; firmware applies it and reports water_volume.
+ * - liters_per_pulse: read/write meterConfig 0x0001 (L), config.
+ * meterConfig is the manufacturer-specific cluster 0xFC03 (ZCL §2.6.1.3) on each meter endpoint.
  *
  * Reporting `max` must stay below 0xffff — zigbee-herdsman treats that value as "cancel
  * reporting" (ZCL §2.5.7.1.6), not a long interval.
@@ -16,8 +17,16 @@
 import {Zcl} from 'zigbee-herdsman';
 import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
 
-const ATTR_LITERS_PER_PULSE = 0xf001;
-const ATTR_SET_VOLUME = 0xf000;
+const meterConfig = m.deviceAddCustomCluster('meterConfig', {
+    name: 'meterConfig',
+    ID: 0xfc03,
+    attributes: {
+        setVolume: {name: 'setVolume', ID: 0x0000, type: Zcl.DataType.UINT32, write: true, max: 0xffffffff},
+        litersPerPulse: {name: 'litersPerPulse', ID: 0x0001, type: Zcl.DataType.UINT16, write: true, max: 0xffff},
+    },
+    commands: {},
+    commandsResponse: {},
+});
 const METER_ENDPOINTS = ['meter1', 'meter2'];
 const REPORTING = {min: 0, max: 65000, change: 0};
 
@@ -29,6 +38,7 @@ export default {
     description: 'DIY Zigbee garage water controller (rain/grid selector + dual water meter)',
     extend: [
         m.deviceEndpoints({endpoints: {relay: 1, meter1: 2, meter2: 3}}),
+        meterConfig,
         m.onOff({
             endpointNames: ['relay'],
             description: 'Water source: OFF = rain tank, ON = grid',
@@ -52,8 +62,8 @@ export default {
             name: 'set_volume',
             description: 'Set/calibrate the cumulative water volume (m³)',
             access: 'SET',
-            cluster: 'seMetering',
-            attribute: {ID: ATTR_SET_VOLUME, type: Zcl.DataType.UINT32},
+            cluster: 'meterConfig',
+            attribute: 'setVolume',
             unit: 'm³',
             scale: 1000,
             precision: 3,
@@ -67,8 +77,8 @@ export default {
             name: 'liters_per_pulse',
             description: 'Calibrate liters increment per pulse',
             access: 'ALL',
-            cluster: 'seMetering',
-            attribute: {ID: ATTR_LITERS_PER_PULSE, type: Zcl.DataType.UINT16},
+            cluster: 'meterConfig',
+            attribute: 'litersPerPulse',
             reporting: REPORTING,
             unit: 'L',
             valueMin: 1,

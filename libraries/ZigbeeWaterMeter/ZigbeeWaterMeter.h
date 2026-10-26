@@ -6,10 +6,12 @@
 #include "ZigbeeEP.h"
 #include <functional>
 
-// Custom attribute IDs (manufacturer-specific)
-#define ATTR_LITERS_PER_PULSE 0xF001
+// Settings live in a manufacturer-specific cluster on the endpoint (ZCL §2.6.1.3): non-standard
+// attribute IDs in seMetering are reserved by the spec (§2.6.1.4).
+#define ZB_CLUSTER_METER_CONFIG 0xFC03
 // seMetering summation attributes aren't writable on esp-zigbee-lib 1.6.8; calibrate via this instead.
-#define ATTR_SET_VOLUME       0xF000
+#define ATTR_SET_VOLUME         0x0000  // uint32, liters
+#define ATTR_LITERS_PER_PULSE   0x0001  // uint16, liters
 
 class ZigbeeWaterMeter : public ZigbeeEP {
 public:
@@ -35,6 +37,7 @@ protected:
 
 private:
   esp_zb_attribute_list_t *_metering_cluster = nullptr;
+  esp_zb_attribute_list_t *_config_cluster = nullptr;
 
   esp_zb_cluster_list_t *_createClusters();
   // No lock; call with the Zigbee lock held or from a callback.
