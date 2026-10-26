@@ -17,16 +17,6 @@
 import {Zcl} from 'zigbee-herdsman';
 import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
 
-const meterConfig = m.deviceAddCustomCluster('meterConfig', {
-    name: 'meterConfig',
-    ID: 0xfc03,
-    attributes: {
-        setVolume: {name: 'setVolume', ID: 0x0000, type: Zcl.DataType.UINT32, write: true, max: 0xffffffff},
-        litersPerPulse: {name: 'litersPerPulse', ID: 0x0001, type: Zcl.DataType.UINT16, write: true, max: 0xffff},
-    },
-    commands: {},
-    commandsResponse: {},
-});
 const METER_ENDPOINTS = ['meter1', 'meter2'];
 const REPORTING = {min: 0, max: 65000, change: 0};
 
@@ -38,7 +28,16 @@ export default {
     description: 'DIY Zigbee garage water controller (rain/grid selector + dual water meter)',
     extend: [
         m.deviceEndpoints({endpoints: {relay: 1, meter1: 2, meter2: 3}}),
-        meterConfig,
+        m.deviceAddCustomCluster('meterConfig', {
+            name: 'meterConfig',
+            ID: 0xfc03,
+            attributes: {
+                setVolume: {name: 'setVolume', ID: 0x0000, type: Zcl.DataType.UINT32, write: true, max: 0xffffffff},
+                litersPerPulse: {name: 'litersPerPulse', ID: 0x0001, type: Zcl.DataType.UINT16, write: true, max: 0xffff},
+            },
+            commands: {},
+            commandsResponse: {},
+        }),
         m.onOff({
             endpointNames: ['relay'],
             description: 'Water source: OFF = rain tank, ON = grid',

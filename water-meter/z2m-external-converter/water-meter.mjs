@@ -11,16 +11,6 @@
 import {Zcl} from 'zigbee-herdsman';
 import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
 
-const meterConfig = m.deviceAddCustomCluster('meterConfig', {
-    name: 'meterConfig',
-    ID: 0xfc03,
-    attributes: {
-        setVolume: {name: 'setVolume', ID: 0x0000, type: Zcl.DataType.UINT32, write: true, max: 0xffffffff},
-        litersPerPulse: {name: 'litersPerPulse', ID: 0x0001, type: Zcl.DataType.UINT16, write: true, max: 0xffff},
-    },
-    commands: {},
-    commandsResponse: {},
-});
 const SE_METERING_CLUSTER_ID = 0x0702;
 const ZCL_REPORT_ATTRIBUTES_CMD = 0x0a;
 
@@ -49,7 +39,16 @@ export default {
     description: 'DIY Zigbee water meter with pulse detection',
     extend: [
         forceDefaultResponse,
-        meterConfig,
+        m.deviceAddCustomCluster('meterConfig', {
+            name: 'meterConfig',
+            ID: 0xfc03,
+            attributes: {
+                setVolume: {name: 'setVolume', ID: 0x0000, type: Zcl.DataType.UINT32, write: true, max: 0xffffffff},
+                litersPerPulse: {name: 'litersPerPulse', ID: 0x0001, type: Zcl.DataType.UINT16, write: true, max: 0xffff},
+            },
+            commands: {},
+            commandsResponse: {},
+        }),
         m.battery({ percentage: false, voltage: false, lowStatus: false, percentageReporting: false }),
         m.numeric({
             name: 'water_volume',
