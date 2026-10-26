@@ -2,14 +2,16 @@
  * Zigbee2MQTT external converter for the DIY Garage Console (XIAO ESP32C6, 16 switch inputs).
  *
  * Endpoint N is connector JN, exposed as '1'..'16'. Per endpoint:
- * - switch_type (genOnOff onTime, read/write; genOnOffSwitchCfg switchType mirrors it, read-only): 'momentary' sends a Toggle on every
- *   press, 'toggle' follows the switch position (closed = ON) and sends On/Off.
+ * - switch_type (manufacturer-specific cluster 0xFC02 'switchConfig' attribute 0x0000, read/write; genOnOffSwitchCfg
+ *   switchType mirrors it, read-only per ZCL): 'momentary' sends a Toggle on every press, 'toggle' follows the switch
+ *   position (closed = ON) and sends On/Off.
  * - state (genOnOff onOff, read-only, reported on change): the switch position, toggle mode only.
  * - action: toggle_N / on_N / off_N, also usable as a binding source (Bind tab, genOnOff).
  *
  * Reporting max is 65000 s: 0xFFFF would cancel the reporting.
  */
 
+import {Zcl} from 'zigbee-herdsman';
 import * as m from 'zigbee-herdsman-converters/lib/modernExtend';
 
 const endpoints = Array.from({length: 16}, (_, i) => `${i + 1}`);
@@ -22,6 +24,15 @@ export default {
     description: 'DIY Zigbee 16-channel switch input console',
     extend: [
         m.deviceEndpoints({endpoints: Object.fromEntries(endpoints.map((name, i) => [name, i + 1]))}),
+        m.deviceAddCustomCluster('switchConfig', {
+            name: 'switchConfig',
+            ID: 0xfc02,
+            attributes: {
+                switchMode: {name: 'switchMode', ID: 0x0000, type: Zcl.DataType.ENUM8, write: true, max: 0x01},
+            },
+            commands: {},
+            commandsResponse: {},
+        }),
         // The reporting setup of 'state' already binds genOnOff to the coordinator
         m.commandsOnOff({endpointNames: endpoints, bind: false}),
         ...endpoints.map((endpointName) =>
@@ -29,8 +40,8 @@ export default {
                 name: 'switch_type',
                 endpointName,
                 lookup: {toggle: 0, momentary: 1},
-                cluster: 'genOnOff',
-                attribute: 'onTime',  // switchType itself is not writable (NOT_AUTHORIZED)
+                cluster: 'switchConfig',
+                attribute: 'switchMode',
                 description: 'momentary: a press sends Toggle. toggle: follows the switch position and sends On/Off',
                 access: 'ALL',
                 entityCategory: 'config',

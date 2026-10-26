@@ -21,6 +21,8 @@ Endpoint N is connector JN. Each channel has a `switch_type`, kept in NVS (defau
 
 `state` is read-only: only the physical switch changes it. Nothing is reported periodically.
 
+Over Zigbee, `switch_type` is attribute `0x0000` of a manufacturer-specific cluster `0xFC02` on each endpoint. The standard `switchType` (On/Off Switch Configuration) mirrors it but stays read-only, as the ZCL defines it.
+
 LED: slow blink while pairing, 5 quick blinks once joined, short blink on every command sent. Inputs are sampled on the expander interrupt plus a 1 s poll, with a 30 ms debounce.
 
 Router (mains-powered): the receiver is always on, so bindings and config writes apply immediately, and it relays for other garage devices and reroutes on its own if a neighbour drops.

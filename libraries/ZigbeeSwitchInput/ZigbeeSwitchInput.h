@@ -7,10 +7,13 @@
 #include <functional>
 
 // Physical switch input exposed as a Zigbee endpoint.
-// Mode (0=toggle, 1=momentary) is written through genOnOff onTime (0x4001), the same trick as
-// ZigbeeRelaySwitch: the stack rejects writes to genOnOffSwitchCfg switchType (NOT_AUTHORIZED) and to
-// custom attribute IDs in genOnOff (INVALID_VALUE). switchType only mirrors the mode.
+// Mode (0=toggle, 1=momentary) is written through a manufacturer-specific cluster on each endpoint
+// (ZCL §2.6.1.3): switchType is read-only per spec, the stack rejects non-standard attributes in
+// genOnOff (INVALID_VALUE), and onTime is a timed-off countdown. switchType mirrors the mode.
 // Commands go to the endpoint's binding table, so bindings made from Zigbee2MQTT work.
+
+#define ZB_CLUSTER_SWITCH_CONFIG   0xFC02
+#define ZB_ATTR_SWITCH_MODE        0x0000  // enum8: 0=toggle, 1=momentary
 
 class ZigbeeSwitchInput : public ZigbeeEP {
 public:
@@ -48,6 +51,7 @@ private:
   volatile bool _switch_type_changed;
 
   esp_zb_attribute_list_t *_switch_cfg_cluster = nullptr;
+  esp_zb_attribute_list_t *_config_cluster = nullptr;
 
   esp_zb_cluster_list_t *_createClusters();
   bool _sendCommand(uint8_t commandId);
