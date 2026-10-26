@@ -163,6 +163,14 @@ void ZigbeeRelaySwitch::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t
       uint8_t val = *(uint8_t *)message->attribute.data.value;
       DEBUG_PRINTLN("ep %d: switchType = %u", _endpoint, val);
       _switch_type = val;
+      // A relay latched in toggle mode would stay energized: momentary ignores Off
+      if (_relay_state && !_pulsing) {
+        _relay_state = false;
+        _applyIdleState();
+        if (_on_state_changed != nullptr) {
+          _on_state_changed(false);
+        }
+      }
       if (_on_switch_type_changed != nullptr) {
         _on_switch_type_changed(val);
       }
