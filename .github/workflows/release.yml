@@ -46,6 +46,28 @@ jobs:
           FIRMWARE_VERSION: ${{ steps.tag.outputs.version }}
         run: pio run -d "${{ steps.tag.outputs.dir }}" -e release
 
+      # Zigbee OTA image, for firmwares setting custom_ota_image_type (scripts/firmware_version.py)
+      - name: Build OTA image
+        env:
+          PROJECT: ${{ steps.tag.outputs.project }}
+          VERSION: ${{ steps.tag.outputs.version }}
+          DIR: ${{ steps.tag.outputs.dir }}
+          IMAGE_BUILDER: https://raw.githubusercontent.com/espressif/esp-zigbee-sdk/92e04110e064f0e24c74f96a3dc42c0f3c183fbb/tools/image_builder_tool/image_builder_tool.py
+        run: |
+          read -r manufacturer image_type < <(pio project config -d "$DIR" --json-output | python3 -c '
+          import json, sys
+          env = dict(dict(json.load(sys.stdin))["env:release"])
+          print(env.get("custom_ota_manufacturer", "-"), env.get("custom_ota_image_type", "-"))')
+          if [ "$image_type" = "-" ]; then echo "No custom_ota_image_type, no OTA image"; exit 0; fi
+
+          IFS=. read -r major minor patch <<< "$VERSION"
+          file_version=$(printf '0x%08X' $(( major << 16 | minor << 8 | patch )))  # same encoding as FIRMWARE_VERSION
+          curl -fsSL "$IMAGE_BUILDER" -o "$RUNNER_TEMP/image_builder_tool.py"
+          cd "$DIR/.pio/build/release"
+          python3 "$RUNNER_TEMP/image_builder_tool.py" -m "$manufacturer" -i "$image_type" -v "$file_version" \
+            -g "$PROJECT $VERSION" --tag 0x0000 firmware.bin
+          mv ./*-ota-file.zigbee firmware.ota
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -86,6 +108,12 @@ jobs:
     concurrency: ota-index
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+
+      - run: pip install zigpy==2.4.0
 
       - name: Publish OTA index
         env:

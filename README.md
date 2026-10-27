@@ -42,7 +42,9 @@ Local builds are versioned `0.0.0` unless `FIRMWARE_VERSION` is set.
 Each release also refreshes the rolling `ota-index` release: its `index.json` lists the latest `.ota` of every firmware, for
 Zigbee2MQTT's `ota.zigbee_ota_override_index_location`.
 
-Firmwares opt into OTA with `custom_ota_image_type` in `platformio.ini` (unique per firmware, see [`scripts/firmware_version.py`](scripts/firmware_version.py)).
+Firmwares opt into OTA with `custom_ota_manufacturer` and `custom_ota_image_type` (unique per firmware) in `platformio.ini`: the
+firmware gets them as defines ([`scripts/firmware_version.py`](scripts/firmware_version.py)), and the workflow wraps the build into a
+`.ota` with Espressif's [`image_builder_tool.py`](https://github.com/espressif/esp-zigbee-sdk/tree/master/tools/image_builder_tool).
 
 ## Structure
 
