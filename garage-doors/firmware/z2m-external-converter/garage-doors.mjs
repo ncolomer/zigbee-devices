@@ -20,6 +20,7 @@ export default {
     model: 'GarageDoors',
     vendor: 'DIY',
     description: 'DIY Zigbee 4-channel garage door controller',
+    ota: true,
     extend: [
         m.deviceEndpoints({endpoints: {l1: 1, l2: 2, l3: 3, l4: 4}}),
         m.deviceAddCustomCluster('relayConfig', {
