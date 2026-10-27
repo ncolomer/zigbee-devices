@@ -57,9 +57,15 @@ pio run -e release
 pio run -e debug -t upload
 ```
 
+## OTA
+
+Endpoint 1 carries the OTA client (manufacturer `0x1001`, image type `0xD101`). Once joined, it queries Zigbee2MQTT every hour.
+
+Each `garage-doors-vX.Y.Z` release lands in the rolling `ota-index` release, which Zigbee2MQTT polls. Zigbee2MQTT then flags
+the update; trigger it from *OTA → Update* (about 1 h with Zigbee2MQTT's default 50-byte blocks). The device reboots into the new image.
+
 ## Troubleshooting
 
 - **Relay inverted** (energized at idle): set `switch_actions` to match the relay module's input polarity.
 - **Door doesn't trigger**: use `momentary`, and raise `pulse_duration_ms` if the opener needs a longer contact.
 - **Re-pair**: hold BOOT for 3 s.
-- OTA is not supported yet.

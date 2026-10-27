@@ -1,0 +1,133 @@
+# Builds and publishes one firmware per tag: <project>-v<MAJOR.MINOR.PATCH>, e.g. garage-doors-v0.1.2
+name: Release firmware
+
+on:
+  push:
+    tags:
+      - '*-v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0  # release notes need the previous tag
+
+      - name: Resolve project from tag
+        id: tag
+        run: |
+          tag="$GITHUB_REF_NAME"
+          project="${tag%-v*}"
+          version="${tag##*-v}"
+          if   [ -f "$project/firmware/platformio.ini" ]; then dir="$project/firmware"
+          elif [ -f "$project/platformio.ini" ];          then dir="$project"
+          else echo "::error::No PlatformIO project for '$project'"; exit 1; fi
+          echo "project=$project" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "dir=$dir"         >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: pio-${{ steps.tag.outputs.project }}-${{ hashFiles(format('{0}/platformio.ini', steps.tag.outputs.dir)) }}
+
+      - run: pip install platformio==6.2.0
+
+      - name: Build
+        env:
+          FIRMWARE_VERSION: ${{ steps.tag.outputs.version }}
+        run: pio run -d "${{ steps.tag.outputs.dir }}" -e release
+
+      # Zigbee OTA image, for firmwares setting custom_ota_image_type (scripts/firmware_version.py)
+      - name: Build OTA image
+        env:
+          PROJECT: ${{ steps.tag.outputs.project }}
+          VERSION: ${{ steps.tag.outputs.version }}
+          DIR: ${{ steps.tag.outputs.dir }}
+          IMAGE_BUILDER: https://raw.githubusercontent.com/espressif/esp-zigbee-sdk/92e04110e064f0e24c74f96a3dc42c0f3c183fbb/tools/image_builder_tool/image_builder_tool.py
+        run: |
+          read -r manufacturer image_type < <(pio project config -d "$DIR" --json-output | python3 -c '
+          import json, sys
+          env = dict(dict(json.load(sys.stdin))["env:release"])
+          print(env.get("custom_ota_manufacturer", "-"), env.get("custom_ota_image_type", "-"))')
+          if [ "$image_type" = "-" ]; then echo "No custom_ota_image_type, no OTA image"; exit 0; fi
+
+          IFS=. read -r major minor patch <<< "$VERSION"
+          file_version=$(printf '0x%08X' $(( major << 16 | minor << 8 | patch )))  # same encoding as FIRMWARE_VERSION
+          curl -fsSL "$IMAGE_BUILDER" -o "$RUNNER_TEMP/image_builder_tool.py"
+          cd "$DIR/.pio/build/release"
+          python3 "$RUNNER_TEMP/image_builder_tool.py" -m "$manufacturer" -i "$image_type" -v "$file_version" \
+            -g "$PROJECT $VERSION" --tag 0x0000 firmware.bin
+          mv ./*-ota-file.zigbee firmware.ota
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROJECT: ${{ steps.tag.outputs.project }}
+          DIR: ${{ steps.tag.outputs.dir }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          build="$DIR/.pio/build/release"
+          mkdir dist
+          cp "$build/firmware.bin" "dist/$tag.bin"
+          [ -f "$build/firmware.factory.bin" ] && cp "$build/firmware.factory.bin" "dist/$tag.factory.bin"
+          [ -f "$build/firmware.ota" ]         && cp "$build/firmware.ota"         "dist/$tag.ota"
+          shopt -s nullglob
+          converters=("$DIR"/z2m-external-converter/*.mjs)
+          [ ${#converters[@]} -gt 0 ] && cp "${converters[@]}" dist/
+          (cd dist && sha256sum * > SHA256SUMS)
+
+          # Changes since the previous release of the same project, limited to what goes into its build
+          prev=$(git describe --tags --abbrev=0 --match "$PROJECT-v*" "$tag^" 2>/dev/null || true)
+          {
+            echo "## Changes"
+            git log --format='- %s (%h)' ${prev:+"$prev.."}"$tag" -- "$PROJECT" libraries scripts
+            echo
+            echo "## Assets"
+            [ -f "dist/$tag.ota" ]         && echo "- \`$tag.ota\`: Zigbee OTA image, for Zigbee2MQTT"
+            [ -f "dist/$tag.factory.bin" ] && echo "- \`$tag.factory.bin\`: full flash image, write at 0x0 over USB"
+            echo "- \`$tag.bin\`: application image"
+            for c in "${converters[@]}"; do echo "- \`$(basename "$c")\`: Zigbee2MQTT external converter"; done
+          } > notes.md
+
+          gh release create "$tag" dist/* --title "$PROJECT ${tag##*-}" --notes-file notes.md
+
+  # Rolling `ota-index` release whose index.json Zigbee2MQTT polls (ota.zigbee_ota_override_index_location).
+  # Rebuilt from all releases, so a run cancelled by a newer one in the concurrency group loses nothing.
+  ota-index:
+    needs: release
+    runs-on: ubuntu-latest
+    concurrency: ota-index
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+
+      - run: pip install zigpy==2.4.0
+
+      - name: Publish OTA index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir ota
+          # Latest release of each firmware: sort -V orders by project, then version
+          gh release list --limit 1000 --exclude-drafts --exclude-pre-releases --json tagName -q '.[].tagName' \
+            | grep -E -- '-v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V \
+            | awk '{ p = $0; sub(/-v[0-9.]+$/, "", p); latest[p] = $0 } END { for (p in latest) print latest[p] }' \
+            | while read -r tag; do gh release download "$tag" --pattern "$tag.ota" --dir ota || true; done
+          shopt -s nullglob
+          python3 scripts/ota_index.py index.json "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" ota/*.ota
+
+          gh release view ota-index >/dev/null 2>&1 || gh release create ota-index --latest=false \
+            --title "OTA index" --notes "Zigbee2MQTT OTA index of the latest firmware releases, rebuilt by each release."
+          gh release upload ota-index index.json --clobber

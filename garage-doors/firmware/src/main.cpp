@@ -11,6 +11,7 @@
 /* Zigbee configuration */
 #define ZIGBEE_MANUFACTURER     "DIY"
 #define ZIGBEE_MODEL            "GarageDoors"
+#define HW_VERSION              1
 
 /* GPIO definitions — Grove Base headers, active-low relay */
 #define RELAY_PIN_1             D1
@@ -119,6 +120,7 @@ void setupSwitches() {
     sw.onSwitchActionsChanged([index](uint8_t val) { saveSwitchActions(index, val); });
 
     sw.begin();  // drives the relay pin to its idle level
+    if (index == 1) sw.addOTAClient(FIRMWARE_VERSION, FIRMWARE_VERSION, HW_VERSION, OTA_MANUFACTURER, OTA_IMAGE_TYPE);
     Zigbee.addEndpoint(&sw);
     DEBUG_PRINTLN("Switch %d: pulse=%u ms type=%u actions=%u", index, pulseDuration, switchType, switchActions);
   }
@@ -147,6 +149,9 @@ void checkJoined() {
   } else {
     DEBUG_PRINTLN("reconnected!");
   }
+
+  // Locates the coordinator's OTA server; the stack then queries it every hour on its own
+  zbSwitches[0].requestOTAUpdate();
 }
 
 void checkFactoryReset() {
@@ -164,7 +169,7 @@ void checkFactoryReset() {
 
 void setup() {
   DEBUG_INIT();
-  DEBUG_PRINTLN("=== %s %s ===", ZIGBEE_MANUFACTURER, ZIGBEE_MODEL);
+  DEBUG_PRINTLN("=== %s %s v%s ===", ZIGBEE_MANUFACTURER, ZIGBEE_MODEL, FIRMWARE_VERSION_STR);
 
   pinMode(RESET_PIN, INPUT_PULLUP);
 
