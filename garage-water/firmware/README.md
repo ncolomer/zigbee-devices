@@ -8,22 +8,22 @@ Shield. It selects the water source with a relay and totals two water meters.
 
 - **Board**: Seeed Studio XIAO ESP32C6 + Grove Shield for XIAO
 - **Power**: mains via USB-C (no battery) — always awake, no deep sleep
-- **Relay**: 3.3V-piloted, Normally Open, **energized on LOW**
+- **Relay**: 3.3V-piloted module (3 V coil, e.g. JQC3F-03VDC) with the trigger jumper on **High**: energized on HIGH
 
 ### Pin Connections
 
 | Function            | Pin  | GPIO   | Notes                                              |
 |---------------------|------|--------|----------------------------------------------------|
-| Relay control       | D4   | 22     | ON/grid = LOW (energized), OFF/tank = HIGH         |
-| Water meter 1 pulse | D1   | 1      | internal pull-up, CHANGE interrupt, settled-level debounce (100 ms close, 500 ms re-arm)|
-| Water meter 2 pulse | D2   | 2      | internal pull-up, CHANGE interrupt, settled-level debounce (100 ms close, 500 ms re-arm)|
+| Relay control       | D4   | 22     | ON/grid = HIGH (energized), OFF/tank = LOW         |
+| Water meter 1 pulse | D0   | 0      | internal pull-up, CHANGE interrupt, counts first LOW, 500 ms HIGH to re-arm|
+| Water meter 2 pulse | D1   | 1      | internal pull-up, CHANGE interrupt, counts first LOW, 500 ms HIGH to re-arm|
 | Factory reset       | BOOT | 9      | onboard button, hold 3 s                           |
 | Status LED          | —    | 15     | pairing / activity feedback                        |
-| Spare               | D0, D7 | 0, 17 | unused                                            |
+| Spare               | D2, D7 | 2, 17 | unused (D2 input found dead on the prototype)     |
 
-**Water source / fail-safe:** the relay idles HIGH (de-energized) via pull-up, and the
-tank is wired to the de-energized side, so an **unpowered device selects the rain tank**.
-Selecting grid (`ON`) energizes the coil. Relay state is remembered across power loss.
+**Water source / fail-safe:** the relay is de-energized when the pin is LOW. The firmware
+drives it LOW first thing in `setup()`, and the tank is wired to the de-energized side, so an
+**unpowered device selects the rain tank**. Selecting grid (`ON`) energizes the coil. Relay state is remembered across power loss.
 
 ## Behavior
 
